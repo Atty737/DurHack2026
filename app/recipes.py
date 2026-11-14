@@ -16,7 +16,7 @@ def recipes():
 def GenerateRecipes():
     load_dotenv()
     budget = request.args.get("budget", type=int)
-    client = genai.Client(api_key = "AQ.Ab8RN6LY4yfu-pudz8qrOU4_23uWMJ99OgnVOAzXoXfOWg1Zqw")
+    client = genai.Client()
 
     response = client.models.generate_content(
         model="gemini-3.5-flash-lite",
