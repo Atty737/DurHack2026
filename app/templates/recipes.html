@@ -16,6 +16,7 @@
 
         const response = await fetch(`/api/recipeGenerate?${params}`);
         const data = await response.json();
+        console.log(data)
     }
 </script>
 {% endblock %}
