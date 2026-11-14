@@ -36,12 +36,10 @@ def create_app(test_config=None):
     from app.auth import bp as auth_bp
     from app.receipts import bp as receipts_bp
     from app.recipes import bp as recipes_bp
-    from app.prices import bp as prices_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(receipts_bp)
     app.register_blueprint(recipes_bp)
-    app.register_blueprint(prices_bp)
     
     return app
