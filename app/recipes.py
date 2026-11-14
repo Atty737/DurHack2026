@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, jsonify
 
 
 bp = Blueprint("recipes", __name__)
@@ -7,3 +7,9 @@ bp = Blueprint("recipes", __name__)
 @bp.get("/recipes")
 def recipes():
     return render_template("recipes.html")
+
+@bp.get("/api/recipeGenerate")
+def GenerateRecipes():
+    budget = request.args.get("budget", type=int)
+    budget += 10
+    return jsonify({"budget": budget})
