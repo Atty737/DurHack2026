@@ -26,4 +26,8 @@ def create_app(test_config=None):
 
     app.register_blueprint(main_bp)
 
+    from app.recipes import bp as recipes_bp
+
+    app.register_blueprint(recipes_bp)
+
     return app
