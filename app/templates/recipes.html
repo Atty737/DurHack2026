@@ -4,9 +4,12 @@
 
 {% block content %}
 <div class="mb-3">
+    
     <label for="budget" class="form-label">Budget for the week:</label>
-    <input type="number" class="form-control" id="budget" aria-describedby="budgetHelp" placeholder="Enter budget">
-    <div id="budgetHelp" class="form-text">All recipes will sum to less than the budget or will use items in your cupboard.</div>
+    <div class="input-group mb-3">
+        <span class="input-group-text">£</span>
+            <input type="number" class="form-control" id="budget" aria-describedby="budgetHelp" placeholder="Enter budget">
+    </div>
 </div>
 <button id="genButton" type="button" class="btn btn-primary">
     <div id="genSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
@@ -30,7 +33,13 @@
             for (let j = 0; j < data.ingredients[i - 1].length; j++) {
                 recipes = recipes + "<li>" + data.ingredients[i - 1][j] + "</li>";
             } 
-            recipes = recipes +  `</ul><p class="d-inline-flex gap-1"><button class="btn-solid theme-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button></p><div id="collapse-${i}" class="collapse"><div class="card card-body">${data.links[i - 1] }</div></div>`;         
+            recipes = recipes +  `</ul>
+            <p class="d-inline-flex gap-1">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
+            </p>
+            <div id="collapse-${i}" class="collapse">
+                <div class="card card-body">${data.links[i - 1] }</div>
+            </div>`;         
         }
 
         document.getElementById("genSpinner").style.display = "none"
