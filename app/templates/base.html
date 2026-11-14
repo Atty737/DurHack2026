@@ -113,16 +113,16 @@
               <span class="d-none d-sm-inline">Recipes</span>
             </a>
 
-            <!-- Upload receipt -->
-            <a class="nav-link {% if request.endpoint == 'receipts.upload_receipt' %}active{% endif %}" href="{{ url_for('receipts.upload_receipt') }}" aria-label="Upload receipt" title="Upload receipt">
-              <i class="bi bi-cloud-upload fs-4 d-sm-none"></i>
-              <span class="d-none d-sm-inline">Upload receipt</span>
+            <!-- Scan receipt -->
+            <a class="nav-link {% if request.endpoint == 'receipts.upload_receipt' %}active{% endif %}" href="{{ url_for('receipts.upload_receipt') }}" aria-label="Scan receipt" title="Scan receipt">
+              <i class="bi bi-camera fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Scan receipt</span>
             </a>
 
-            <!-- My items -->
-            <a class="nav-link {% if request.endpoint == 'receipts.receipt_items' %}active{% endif %}" href="{{ url_for('receipts.receipt_items') }}" aria-label="My items" title="My items">
+            <!-- Pantry -->
+            <a class="nav-link {% if request.endpoint == 'receipts.receipt_items' %}active{% endif %}" href="{{ url_for('receipts.receipt_items') }}" aria-label="Pantry" title="Pantry">
               <i class="bi bi-basket fs-4 d-sm-none"></i>
-              <span class="d-none d-sm-inline">My items</span>
+              <span class="d-none d-sm-inline">Pantry</span>
             </a>
 
             <!-- User info: desktop only -->
