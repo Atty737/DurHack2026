@@ -4,65 +4,172 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Cooking{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+      /* Base Navbar Styling */
+      .app-navbar {
+        background-color: var(--bs-body-bg, #ffffff);
+        z-index: 1030;
+      }
+
+      .app-navbar .logout-btn {
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      /* Mobile (< 576px): Fixed at bottom, icon navigation */
+      @media (max-width: 575.98px) {
+        .app-navbar {
+          position: fixed;
+          bottom: 0;
+          top: auto;
+          left: 0;
+          right: 0;
+          width: 100%;
+          border-top: 1px solid var(--bs-border-color, #dee2e6);
+          border-bottom: none;
+          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+          padding-top: 0.35rem;
+          padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        body {
+          padding-top: 0 !important;
+          padding-bottom: 4.75rem !important;
+        }
+
+        .app-navbar .nav-link {
+          color: var(--bs-secondary-color, #6c757d);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 0.35rem 0.5rem;
+          line-height: 1;
+        }
+
+        .app-navbar .nav-link:hover,
+        .app-navbar .nav-link:focus,
+        .app-navbar .nav-link.active {
+          color: var(--bs-primary, #0d6efd);
+        }
+      }
+
+      /* Desktop (>= 576px): Fixed at top, full text navigation */
+      @media (min-width: 576px) {
+        .app-navbar {
+          position: fixed;
+          top: 0;
+          bottom: auto;
+          left: 0;
+          right: 0;
+          width: 100%;
+          border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+          border-top: none;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
+        }
+
+        body {
+          padding-top: 4.5rem !important;
+          padding-bottom: 1.5rem !important;
+        }
+
+        .app-navbar .nav-link {
+          display: inline-block;
+          padding: 0.5rem 0.75rem;
+        }
+      }
+    </style>
   </head>
   <body>
-    <header>
-      <h1><a href="{{ url_for('main.index') }}">Cooking</a></h1>
-      <nav>
-        {% if session.get("user_id") %}
-          <span>Signed in as {{ session["username"] }}</span>
-          <form method="post" action="{{ url_for('auth.logout') }}">
-            <button type="submit">Log out</button>
-          </form>
-        {% else %}
-          <a href="{{ url_for('auth.login') }}">Log in</a>
-          <a href="{{ url_for('auth.signup') }}">Sign up</a>
-        {% endif %}
-        {% if session.get("user_id") %}
-          <a href="{{ url_for('receipts.upload_receipt') }}">Upload receipt</a>
-        {% endif %}
-      </nav>
-        <nav class="navbar sm:navbar-expand bg-1 fg-2">
-          <div class="container-fluid">
-            <a class="navbar-brand" href="#">Navbar</a>
-            <button class="btn-icon navbar-toggler" type="button" data-bs-toggle="drawer" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon" aria-hidden="true"></span>
-            </button>
-            <dialog class="drawer drawer-end" tabindex="-1" id="navbarNavAltMarkup" aria-labelledby="navbarNavAltMarkupLabel">
-              <div class="drawer-header">
-                <h5 class="drawer-title" id="navbarNavAltMarkupLabel">Menu</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="drawer" aria-label="Close"></button>
-              </div>
-              <div class="drawer-body">
-                <div class="nav nav-pills navbar-nav">
-                  {% if session.get("user_id") %}
-                  
-
-                  {% endif %}
-                  <a class="nav-link active" aria-current="page" href="#">Home</a>
-                  <a class="nav-link" href="#">Features</a>
-                  <a class="nav-link" href="#">Pricing</a>
-                  <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-                </div>
-              </div>
-            </dialog>
-          </div>
-        </nav>
+    <!-- Mobile top header bar -->
+    <header class="d-sm-none py-2 px-3 border-bottom bg-body-tertiary text-center">
+      <a class="h5 m-0 fw-bold text-decoration-none text-body" href="{{ url_for('main.index') }}">Cooking</a>
     </header>
-    <main>
+
+    <!-- Navigation bar (Fixed bottom on mobile, fixed top on desktop) -->
+    <nav class="navbar navbar-expand app-navbar">
+      <div class="container">
+        <!-- Brand: hidden on mobile (handled by top header/home icon), shown on desktop -->
+        <a class="navbar-brand fw-bold d-none d-sm-inline-block" href="{{ url_for('main.index') }}">Cooking</a>
+
+        <!-- Nav items: spaced evenly on mobile, aligned right on desktop -->
+        <div class="navbar-nav w-100 justify-content-around justify-content-sm-end align-items-center gap-sm-2">
+          <!-- Home link -->
+          <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}" aria-label="Home" title="Home">
+            <i class="bi bi-house-door fs-4 d-sm-none"></i>
+            <span class="d-none d-sm-inline">Home</span>
+          </a>
+
+          {% if session.get("user_id") %}
+            <!-- Recipes link -->
+            <a class="nav-link {% if request.endpoint == 'recipes.recipes' %}active{% endif %}" href="{{ url_for('recipes.recipes') }}" aria-label="Recipes" title="Recipes">
+              <i class="bi bi-book fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Recipes</span>
+            </a>
+
+            <!-- Upload receipt -->
+            <a class="nav-link {% if request.endpoint == 'receipts.upload_receipt' %}active{% endif %}" href="{{ url_for('receipts.upload_receipt') }}" aria-label="Upload receipt" title="Upload receipt">
+              <i class="bi bi-cloud-upload fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Upload receipt</span>
+            </a>
+
+            <!-- My items -->
+            <a class="nav-link {% if request.endpoint == 'receipts.receipt_items' %}active{% endif %}" href="{{ url_for('receipts.receipt_items') }}" aria-label="My items" title="My items">
+              <i class="bi bi-basket fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">My items</span>
+            </a>
+
+            <!-- User info: desktop only -->
+            <span class="navbar-text d-none d-md-inline small text-body-secondary mx-2">
+              Signed in as <strong>{{ session["username"] }}</strong>
+            </span>
+
+            <!-- Logout -->
+            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0 d-inline">
+              <button type="submit" class="nav-link logout-btn" aria-label="Log out" title="Log out">
+                <i class="bi bi-box-arrow-right fs-4 d-sm-none"></i>
+                <span class="d-none d-sm-inline">Log out</span>
+              </button>
+            </form>
+          {% else %}
+            <!-- Log in -->
+            <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}" aria-label="Log in" title="Log in">
+              <i class="bi bi-box-arrow-in-right fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Log in</span>
+            </a>
+
+            <!-- Sign up -->
+            <a class="nav-link {% if request.endpoint == 'auth.signup' %}active{% endif %}" href="{{ url_for('auth.signup') }}" aria-label="Sign up" title="Sign up">
+              <i class="bi bi-person-plus fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Sign up</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container py-3">
       {% with messages = get_flashed_messages() %}
         {% if messages %}
-          <ul>
+          <div class="mb-3">
             {% for message in messages %}
-              <li>{{ message }}</li>
+              <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
             {% endfor %}
-          </ul>
+          </div>
         {% endif %}
       {% endwith %}
-      <div class = "container">
+      <div class="container">
         {% block content %}{% endblock %}
       </div>
     </main>

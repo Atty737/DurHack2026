@@ -5,15 +5,18 @@
 {% block content %}
   <h2>Upload receipt</h2>
   <form id="receipt-upload-form" method="post" enctype="multipart/form-data">
-    <label for="receipt">Receipt image</label>
-    <input
-      id="receipt"
-      name="receipt"
-      type="file"
-      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-      required
-    >
-    <button id="upload-receipt-button" type="submit">
+    <div class="mb-3">
+      <label for="receipt" class="form-label">Receipt image</label>
+      <input
+        id="receipt"
+        name="receipt"
+        type="file"
+        class="form-control"
+        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+        required
+      >
+    </div>
+    <button id="upload-receipt-button" type="submit" class="btn btn-primary">
       <span
         id="upload-receipt-spinner"
         class="spinner-border spinner-border-sm d-none"
@@ -38,7 +41,7 @@
   </script>
 
   {% if uploaded and result %}
-    <p>Image processed successfully.</p>
+    <p class="mt-3">Image processed successfully.</p>
     <p>{{ saved_count }} item(s) saved to your account.</p>
     {% if result %}
       <h3>Detected items</h3>

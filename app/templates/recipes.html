@@ -3,12 +3,12 @@
 {% block title %}Recipes{% endblock %}
 
 {% block content %}
-<div class="form-group">
-    <label for="budget">Budget for the week:</label>
+<div class="mb-3">
+    <label for="budget" class="form-label">Budget for the week:</label>
     <input type="number" class="form-control" id="budget" aria-describedby="budgetHelp" placeholder="Enter budget">
-    <small id="budgetHelp" class="form-text text-muted">All recipes will sum to less than the budget or will use items in your cupboard.</small>
+    <div id="budgetHelp" class="form-text">All recipes will sum to less than the budget or will use items in your cupboard.</div>
 </div>
-<button id="genButton" type="button" class="btn">Generate Recipes</button>
+<button id="genButton" type="button" class="btn btn-primary">Generate Recipes</button>
 <script>
     document.getElementById("genButton").addEventListener("click", GenerateRecipes);
     async function GenerateRecipes(event) {
@@ -27,6 +27,7 @@
         }
     }
 </script>
+
 <div id="recipe1"></div>
 <div id="recipe2"></div>
 <div id="recipe3"></div>
@@ -35,5 +36,3 @@
 <div id="recipe6"></div>
 <div id="recipe7"></div>
 {% endblock %}
-
-<p class="d-inline-flex gap-1"><button class="btn-solid theme-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">Open Recipe</button></p>

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}My receipt items{% endblock %}
+
+{% block content %}
+  <h2>My receipt items</h2>
+
+  {% if items %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th scope="col">Item</th>
+            <th scope="col">Price</th>
+            <th scope="col">Date</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>{{ item["item_name"] }}</td>
+              <td>
+                {% if item["price"] is not none %}
+                  £{{ "%.2f"|format(item["price"]) }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ item["created_at"].strftime("%Y-%m-%d %H:%M") }}</td>
+              <td>
+                <form
+                  method="post"
+                  action="{{ url_for('receipts.delete_receipt_item', item_id=item['_id']) }}"
+                  onsubmit="return confirm('Delete this receipt item?');"
+                  class="d-inline"
+                >
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>You do not have any saved receipt items yet.</p>
+    <a href="{{ url_for('receipts.upload_receipt') }}" class="btn btn-primary">Upload a receipt</a>
+  {% endif %}
+{% endblock %}

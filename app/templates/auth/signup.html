@@ -1,23 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Sign up | DurHack 2026{% endblock %}
+{% block title %}Sign up | Cooking{% endblock %}
 
 {% block content %}
   <h2>Sign up</h2>
   <form method="post">
-    <label for="username">Username</label>
-    <input id="username" name="username" type="text" required autocomplete="username">
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input id="username" name="username" type="text" class="form-control" required autocomplete="username">
+    </div>
 
-    <label for="email">Email</label>
-    <input id="email" name="email" type="email" required autocomplete="email">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input id="email" name="email" type="email" class="form-control" required autocomplete="email">
+    </div>
 
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password" minlength="8" required autocomplete="new-password">
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input id="password" name="password" type="password" class="form-control" minlength="8" required autocomplete="new-password">
+    </div>
 
-    <label for="confirm_password">Confirm password</label>
-    <input id="confirm_password" name="confirm_password" type="password" minlength="8" required autocomplete="new-password">
+    <div class="mb-3">
+      <label for="confirm_password" class="form-label">Confirm password</label>
+      <input id="confirm_password" name="confirm_password" type="password" class="form-control" minlength="8" required autocomplete="new-password">
+    </div>
 
-    <button type="submit">Sign up</button>
+    <button type="submit" class="btn btn-primary">Sign up</button>
   </form>
-  <p>Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+  <p class="mt-3">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
 {% endblock %}
