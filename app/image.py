@@ -13,7 +13,6 @@ AUTO_FIND_SCALE = True
 DEFAULT_SCALE = 2.5
 TESS_CONFIG = r"--psm 6"
 
-
 def reconstruct_lines_by_y(words):
     """
     Groups detected words into rows based on vertical Y-center proximity rather than
