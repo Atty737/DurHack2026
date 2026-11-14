@@ -1,0 +1,26 @@
+from pymongo.database import Database
+
+from app.migrations.v001_initial import upgrade as initial_upgrade
+from app.migrations.v002_users import upgrade as users_upgrade
+
+
+MIGRATIONS = (
+    ("v001_initial", initial_upgrade),
+    ("v002_users", users_upgrade),
+)
+
+
+def run(db: Database):
+    migrations = db["_migrations"]
+    migrations.create_index("version", unique=True)
+    applied = {
+        migration["version"]
+        for migration in migrations.find({}, {"_id": 0, "version": 1})
+    }
+
+    for version, upgrade in MIGRATIONS:
+        if version in applied:
+            continue
+
+        upgrade(db)
+        migrations.insert_one({"version": version})
