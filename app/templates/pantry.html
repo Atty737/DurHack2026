@@ -3,7 +3,17 @@
 {% block title %}My pantry{% endblock %}
 
 {% block content %}
-  <h2>My Pantry</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    {% if items %}
+      <form
+        method="post"
+        action="{{ url_for('receipts.delete_all_receipt_items') }}"
+        onsubmit="return confirm('Are you sure you want to delete all items from your pantry?');"
+      >
+        <button type="submit" class="btn btn-danger">Delete all</button>
+      </form>
+    {% endif %}
+  </div>
 
   {% if items %}
     <div class="table-responsive">
@@ -12,8 +22,9 @@
           <tr>
             <th scope="col">Item</th>
             <th scope="col">Price</th>
+            <th scope="col" class="text-center">Quantity</th>
             <th scope="col">Date</th>
-            <th scope="col">Actions</th>
+            <th scope="col" class="text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -27,15 +38,21 @@
                   —
                 {% endif %}
               </td>
-              <td>{{ item["created_at"].strftime("%Y-%m-%d %H:%M") }}</td>
-              <td>
+              <td class="text-center">
+                {% if item["quantity"] is not none %}
+                  {{ item.quantity }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ item["created_at"].strftime("%d/%m/%Y at %H:%M") }}</td>
+              <td class="text-center">
                 <form
                   method="post"
                   action="{{ url_for('receipts.delete_receipt_item', item_id=item['_id']) }}"
-                  onsubmit="return confirm('Delete this receipt item?');"
                   class="d-inline"
                 >
-                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash3"></i></button>
                 </form>
               </td>
             </tr>

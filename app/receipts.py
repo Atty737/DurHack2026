@@ -74,7 +74,7 @@ def upload_receipt():
                     if items:
                         get_db().receipt_items.insert_many(items)
 
-                    flash("Receipt uploaded and processed.")
+                    flash(f"{len(items)} items uploaded and added to your pantry")
                     return render_template(
                         "upload_receipt.html",
                         uploaded=True,
@@ -121,4 +121,17 @@ def delete_receipt_item(item_id):
     else:
         flash("That receipt item does not exist.")
 
+    return redirect(url_for("receipts.receipt_items"))
+
+
+@bp.post("/receipt-items/delete-all")
+def delete_all_receipt_items():
+    if not session.get("user_id"):
+        flash("Log in to delete receipt items.")
+        return redirect(url_for("auth.login"))
+
+    result = get_db().receipt_items.delete_many(
+        {"user_id": session["user_id"]}
+    )
+    flash(f"Deleted {result.deleted_count} item(s) from your pantry.")
     return redirect(url_for("receipts.receipt_items"))
