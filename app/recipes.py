@@ -22,3 +22,4 @@ def GenerateRecipes():
         contents=f"Make 7 dinner recipes where the ingredients total to under £{budget}, include the name of each dish followed by a list of the ingredients and then the instructions to make it",
     )
     return jsonify({"response": response.text})
+
