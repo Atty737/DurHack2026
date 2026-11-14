@@ -45,8 +45,8 @@
                   —
                 {% endif %}
               </td>
-              <td>{{ item["created_at"].strftime("%Y-%m-%d %H:%M") }}</td>
-              <td class="text-center">
+              <td>{{ item["created_at"].strftime("%d/%m/%Y at %H:%M") }}</td>
+              <td>
                 <form
                   method="post"
                   action="{{ url_for('receipts.delete_receipt_item', item_id=item['_id']) }}"
