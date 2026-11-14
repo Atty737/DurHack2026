@@ -16,7 +16,23 @@
 
         const response = await fetch(`/api/recipeGenerate?${params}`);
         const data = await response.json();
-        console.log(data)
+        for (let i = 1; i < 8; i++){
+            let id = "recipe" + i;
+            let recipe = "<h2>" + data.recipeNames[i - 1] + "</h2><ul>";
+            for (let j = 0; j < data.ingredients[i - 1].length; j++) {
+                recipe = recipe + "<li>" + data.ingredients[i - 1][j] + "</li>";
+            } 
+            recipe = recipe +  "</ul><p class=\"d-inline-flex gap-1\"><button class=\"btn-solid theme-primary\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapseExample\" aria-expanded=\"false\" aria-controls=\"collapseExample\">Open Recipe</button></p><div class=\"collapse\" id=\"collapseExample\"><div class=\"card card-body\">" + data.links[i - 1] + "</div></div>";         
+            document.getElementById(id).innerHTML = recipe;
+        }
     }
 </script>
+
+<div id="recipe1"></div>
+<div id="recipe2"></div>
+<div id="recipe3"></div>
+<div id="recipe4"></div>
+<div id="recipe5"></div>
+<div id="recipe6"></div>
+<div id="recipe7"></div>
 {% endblock %}

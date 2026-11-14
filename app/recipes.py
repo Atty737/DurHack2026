@@ -2,6 +2,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from google import genai
 from dotenv import load_dotenv
 from app.db import get_db
+import json
 
 
 bp = Blueprint("recipes", __name__)
@@ -26,7 +27,12 @@ def GenerateRecipes():
     client = genai.Client()
 
     response = client.models.generate_content(
-        model="gemini-3.8-flash",
-        contents=f"Make 7 dinner recipes where the ingredients total to under £{budget}, include the name of each dish followed by a list of the ingredients and then the instructions to make it",
+        model="gemini-3.5-flash-lite",
+        contents=f"Make 7 dinner recipes where the ingredients total to under £{budget}, return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string]"
     )
-    return jsonify({"response": response.text})
+
+    recipes = json.loads(response.text)
+    recipeNames = [recipes[0][0], recipes[1][0], recipes[2][0], recipes[3][0], recipes[4][0], recipes[5][0], recipes[6][0]]
+    ingredients = [recipes[0][1], recipes[1][1], recipes[2][1], recipes[3][1], recipes[4][1], recipes[5][1], recipes[6][1]]
+    links = [recipes[0][2], recipes[1][2], recipes[2][2], recipes[3][2], recipes[4][2], recipes[5][2], recipes[6][2]]
+    return jsonify({"recipeNames": recipeNames, "ingredients": ingredients, "links": links})
