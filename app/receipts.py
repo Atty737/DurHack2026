@@ -98,7 +98,7 @@ def receipt_items():
             {"user_id": session["user_id"]},
         ).sort("created_at", -1)
     )
-    return render_template("receipt_items.html", items=items)
+    return render_template("pantry.html", items=items)
 
 
 @bp.post("/receipt-items/<item_id>/delete")
