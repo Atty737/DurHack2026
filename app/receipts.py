@@ -74,7 +74,7 @@ def upload_receipt():
                     if items:
                         get_db().receipt_items.insert_many(items)
 
-                    flash("Receipt uploaded and processed.")
+                    flash(f"{len(items)} items uploaded and added to your pantry")
                     return render_template(
                         "upload_receipt.html",
                         uploaded=True,
