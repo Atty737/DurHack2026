@@ -8,7 +8,7 @@ import pytesseract
 from werkzeug.utils import secure_filename
 
 from app.db import get_db
-from app.image import process_receipt
+from app.gemini_image import gemini_read_image
 
 bp = Blueprint("receipts", __name__)
 
@@ -48,7 +48,7 @@ def upload_receipt():
                 flash(str(error))
             else:
                 try:
-                    result = process_receipt(temporary_path)
+                    result = gemini_read_image(temporary_path)
                 except pytesseract.TesseractNotFoundError:
                     flash(
                         "Receipt processing is unavailable because Tesseract "
@@ -62,11 +62,12 @@ def upload_receipt():
                         {
                             "user_id": session["user_id"],
                             "receipt_id": receipt_id,
-                            "item_name": item,
-                            "price": price,
+                            "item_name": item["item"],
+                            "price": item["price"],
+                            "quantity": item["quantity"],
                             "created_at": datetime.now(timezone.utc),
                         }
-                        for item, price in result["items"]
+                        for item in result
                     ]
                     if items:
                         get_db().receipt_items.insert_many(items)
