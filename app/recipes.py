@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 
+from app.db import get_db
+
 
 bp = Blueprint("recipes", __name__)
 
@@ -13,3 +15,4 @@ def GenerateRecipes():
     budget = request.args.get("budget", type=int)
     budget += 10
     return jsonify({"budget": budget})
+
