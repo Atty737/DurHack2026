@@ -16,3 +16,7 @@ def GenerateRecipes():
     budget += 10
     return jsonify({"budget": budget})
 
+@bp.get("/upload_receipt")
+def upload_receipt():
+
+    return render_template("upload_receipt.html")

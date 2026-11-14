@@ -55,6 +55,10 @@ get_db().users.insert_one({
 })
 ```
 
+The `v003_receipt_items` migration creates a `receipt_items` collection. Each
+parsed item is linked to the logged-in user through `user_id` and grouped by a
+`receipt_id`.
+
 The browser authentication pages are available at:
 
 - `/signup` to create an account
@@ -66,3 +70,10 @@ Run the `v002_users` migration before using signup:
 ```powershell
 flask --app run init-db
 ```
+
+Receipt images can be uploaded at `/upload-receipt`. Accepted formats are
+JPG, JPEG, PNG, and WebP, with a 10 MB limit. Files are saved in the operating
+system temporary directory under `durhack2026-receipts`, processed with the OCR
+pipeline in `app/image.py`, and deleted after processing. Tesseract OCR must
+be installed separately and can be configured with the `TESSERACT_CMD`
+environment variable when it is not on PATH.

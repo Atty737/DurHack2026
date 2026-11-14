@@ -1,16 +1,13 @@
+import os
 import re
 import statistics
+
 import cv2
 import pytesseract
 from pytesseract import Output
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-image_path = r"C:\Users\produ\Downloads\ReceiptTesting\opTestReceipt4.png"
-image = cv2.imread(image_path)
-
-if image is None:
-    raise FileNotFoundError(f"Unable to load image: {image_path}")
+if tesseract_cmd := os.getenv("TESSERACT_CMD"):
+    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
 AUTO_FIND_SCALE = True
 DEFAULT_SCALE = 2.5
@@ -243,42 +240,26 @@ def parse_items_to_2d_array(text):
     return items_2d
 
 
-# 1. Baseline Scan (Raw Original Image)
-raw_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-baseline = scan_image(raw_rgb, scale=1.0)
+def process_receipt(image_path):
+    """Run OCR on an uploaded receipt and return parsed items and metadata."""
+    image = cv2.imread(str(image_path))
+    if image is None:
+        raise FileNotFoundError(f"Unable to load image: {image_path}")
 
-# 2. Auto-Select Best Pipeline & Scale
-best_mode, chosen_scale, final_scan, best_ocr_img, est_scale, trial_log = find_best_pipeline_and_scale(
-    image, baseline
-)
-
-changes_applied = [
-    f"Estimated target scale from font height ({baseline['median_height']:.1f}px -> ~{est_scale}x)",
-    f"Winning Pipeline: {best_mode} at {chosen_scale}x scale"
-]
-
-# 3. Parse into 2D Array: [[letters_only_item, price], ...]
-items_2d = parse_items_to_2d_array(final_scan["text"])
-
-# 4. Annotate Image
-annotated_image = image.copy()
-for entry in final_scan["words"]:
-    x, y, w, h = entry["box"]
-    conf = entry["conf"]
-    color = (0, 200, 0) if conf >= 75 else ((0, 165, 255) if conf >= 50 else (0, 0, 255))
-
-    cv2.rectangle(annotated_image, (x, y), (x + w, y + h), color, 2)
-    cv2.putText(
-        annotated_image,
-        f"{entry['text']} ({int(conf)}%)",
-        (x, max(y - 5, 12)),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.4,
-        color,
-        1,
-        cv2.LINE_AA
+    raw_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    baseline = scan_image(raw_rgb, scale=1.0)
+    best_mode, chosen_scale, final_scan, _, est_scale, trial_log = (
+        find_best_pipeline_and_scale(image, baseline)
     )
+    items_2d = parse_items_to_2d_array(final_scan["text"])
 
-for row in items_2d:
-    print(f" {row}")
+    return {
+        "items": items_2d,
+        "text": final_scan["text"],
+        "avg_conf": final_scan["avg_conf"],
+        "best_mode": best_mode,
+        "chosen_scale": chosen_scale,
+        "estimated_scale": est_scale,
+        "trial_log": trial_log,
+    }
 

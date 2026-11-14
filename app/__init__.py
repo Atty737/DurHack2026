@@ -18,6 +18,7 @@ def create_app(test_config=None):
         MONGO_DB_NAME=os.getenv("MONGO_DB_NAME", "durhack2026"),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
+        MAX_CONTENT_LENGTH=10 * 1024 * 1024,
     )
 
     if test_config is not None:
@@ -33,11 +34,13 @@ def create_app(test_config=None):
 
     from app.main import bp as main_bp
     from app.auth import bp as auth_bp
+    from app.receipts import bp as receipts_bp
     from app.recipes import bp as recipes_bp
     from app.prices import bp as prices_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(receipts_bp)
     app.register_blueprint(recipes_bp)
     app.register_blueprint(prices_bp)
     

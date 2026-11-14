@@ -2,11 +2,13 @@ from pymongo.database import Database
 
 from app.migrations.v001_initial import upgrade as initial_upgrade
 from app.migrations.v002_users import upgrade as users_upgrade
+from app.migrations.v003_receipt_items import upgrade as receipt_items_upgrade
 
 
 MIGRATIONS = (
     ("v001_initial", initial_upgrade),
     ("v002_users", users_upgrade),
+    ("v003_receipt_items", receipt_items_upgrade),
 )
 
 

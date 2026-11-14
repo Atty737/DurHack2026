@@ -20,6 +20,9 @@
           <a href="{{ url_for('auth.login') }}">Log in</a>
           <a href="{{ url_for('auth.signup') }}">Sign up</a>
         {% endif %}
+        {% if session.get("user_id") %}
+          <a href="{{ url_for('receipts.upload_receipt') }}">Upload receipt</a>
+        {% endif %}
       </nav>
     </header>
     <main>
