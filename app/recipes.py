@@ -28,7 +28,7 @@ def GenerateRecipes():
 
     response = client.models.generate_content(
         model="gemini-3.5-flash-lite",
-        contents=f"Make 7 dinner recipes where the ingredients total to under £{budget}, return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string]"
+        contents=f"Make 7 dinner recipes where the ingredients total to under £{budget}, return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string formatted in steps with each being seperated by '\\n'"
     )
 
     recipes = json.loads(response.text)
