@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 .env
 .pytest_cache/
+test.py
+sample_receipt.png
