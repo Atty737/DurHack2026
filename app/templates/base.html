@@ -10,8 +10,28 @@
   <body>
     <header>
       <h1><a href="{{ url_for('main.index') }}">DurHack 2026</a></h1>
+      <nav>
+        {% if session.get("user_id") %}
+          <span>Signed in as {{ session["username"] }}</span>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <button type="submit">Log out</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">Log in</a>
+          <a href="{{ url_for('auth.signup') }}">Sign up</a>
+        {% endif %}
+      </nav>
     </header>
     <main>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
       {% block content %}{% endblock %}
     </main>
   </body>

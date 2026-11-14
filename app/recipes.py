@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from google import genai
 from dotenv import load_dotenv
+from app.db import get_db
 
 
 bp = Blueprint("recipes", __name__)
