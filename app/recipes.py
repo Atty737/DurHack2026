@@ -23,16 +23,3 @@ def GenerateRecipes():
     )
     return jsonify({"response": response.text})
 
-@bp.get("/upload_receipt")
-def upload_receipt():
-
-    return render_template("upload_receipt.html")
-
-def get_user_receipts(user_id):
-    db = get_db()
-    receipts = db.execute(
-        "SELECT * FROM receipts WHERE user_id = ? ORDER BY created_at DESC",
-        (user_id,)
-    ).fetchall()
-    return receipts
-    print("Will is the best")
