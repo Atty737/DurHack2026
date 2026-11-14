@@ -21,6 +21,9 @@ def gemini_read_image(image_path):
         ]
     )
 
-    return json.loads(interaction.output_text)
+    items = json.loads(interaction.output_text)
 
-print(gemini_read_image("irl_sample.jpeg"))
+    for item in items:
+        item["price"] = round(item["price"], 2) 
+
+    return json.loads(interaction.output_text)
