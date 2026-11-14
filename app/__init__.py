@@ -23,11 +23,11 @@ def create_app(test_config=None):
         app.extensions["mongo_db"] = mongo_client[app.config["MONGO_DB_NAME"]]
 
     from app.main import bp as main_bp
-
-    app.register_blueprint(main_bp)
-
     from app.recipes import bp as recipes_bp
-
+    from app.prices import bp as prices_bp
+    
+    app.register_blueprint(main_bp)
     app.register_blueprint(recipes_bp)
-
+    app.register_blueprint(prices_bp)
+    
     return app
