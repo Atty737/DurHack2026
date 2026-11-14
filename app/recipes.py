@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for, jsonify
 from google import genai
 from dotenv import load_dotenv
 from app.db import get_db
@@ -9,10 +9,18 @@ bp = Blueprint("recipes", __name__)
 
 @bp.get("/recipes")
 def recipes():
+    if not session.get("user_id"):
+        flash("Log in to view recipes.")
+        return redirect(url_for("auth.login"))
+
     return render_template("recipes.html")
+
 
 @bp.get("/api/recipeGenerate")
 def GenerateRecipes():
+    if not session.get("user_id"):
+        return jsonify({"error": "Unauthorized"}), 401
+
     load_dotenv()
     budget = request.args.get("budget", type=int)
     client = genai.Client()

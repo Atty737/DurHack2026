@@ -4,6 +4,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from bson import ObjectId
+from bson.errors import InvalidId
 import pytesseract
 from werkzeug.utils import secure_filename
 
@@ -64,6 +66,7 @@ def upload_receipt():
                             "receipt_id": receipt_id,
                             "item_name": item,
                             "price": price,
+                            "quantity": 1,
                             "created_at": datetime.now(timezone.utc),
                         }
                         for item, price in result["items"]
@@ -82,3 +85,40 @@ def upload_receipt():
                     temporary_path.unlink(missing_ok=True)
 
     return render_template("upload_receipt.html", uploaded=False)
+
+
+@bp.get("/receipt-items")
+def receipt_items():
+    if not session.get("user_id"):
+        flash("Log in to view your receipt items.")
+        return redirect(url_for("auth.login"))
+
+    items = list(
+        get_db().receipt_items.find(
+            {"user_id": session["user_id"]},
+        ).sort("created_at", -1)
+    )
+    return render_template("receipt_items.html", items=items)
+
+
+@bp.post("/receipt-items/<item_id>/delete")
+def delete_receipt_item(item_id):
+    if not session.get("user_id"):
+        flash("Log in to delete receipt items.")
+        return redirect(url_for("auth.login"))
+
+    try:
+        object_id = ObjectId(item_id)
+    except InvalidId:
+        flash("That receipt item does not exist.")
+        return redirect(url_for("receipts.receipt_items"))
+
+    result = get_db().receipt_items.delete_one(
+        {"_id": object_id, "user_id": session["user_id"]}
+    )
+    if result.deleted_count:
+        flash("Receipt item deleted.")
+    else:
+        flash("That receipt item does not exist.")
+
+    return redirect(url_for("receipts.receipt_items"))
