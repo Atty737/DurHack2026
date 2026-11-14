@@ -77,3 +77,5 @@ system temporary directory under `durhack2026-receipts`, processed with the OCR
 pipeline in `app/image.py`, and deleted after processing. Tesseract OCR must
 be installed separately and can be configured with the `TESSERACT_CMD`
 environment variable when it is not on PATH.
+
+Logged-in users can view their saved items at `/receipt-items`.
