@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}My receipt items{% endblock %}
+{% block title %}My pantry{% endblock %}
 
 {% block content %}
-  <h2>My receipt items</h2>
+  <h2>My Pantry</h2>
 
   {% if items %}
     <div class="table-responsive">
@@ -44,6 +44,6 @@
       </table>
     </div>
   {% else %}
-    <p>You do not have any saved receipt items yet.</p>
+    <p>You do not yet have any saved ingredients.</p>
   {% endif %}
 {% endblock %}

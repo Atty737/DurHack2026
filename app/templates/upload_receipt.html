@@ -47,7 +47,7 @@
       <h3>Detected items</h3>
       <ul>
         {% for item in result %}
-          <li>{{ item["item"] }}{% if item["price"] is not none %}: £{{ "%.2f"|format(item["price"]) }}{% endif %}{{ item["quantity"] }}</li>
+          <li>{{ item["quantity"] }}x {{ item["item"] }}{% if item["price"] is not none %}: £{{ "%.2f"|format(item["price"]) }}{% endif %}</li>
         {% endfor %}
       </ul>
     {% else %}
