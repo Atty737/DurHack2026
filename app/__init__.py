@@ -26,4 +26,8 @@ def create_app(test_config=None):
 
     app.register_blueprint(main_bp)
 
+    from app.prices import bp as prices_bp
+    
+    app.register_blueprint(prices_bp)
+
     return app
