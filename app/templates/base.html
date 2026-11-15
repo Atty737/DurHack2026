@@ -145,15 +145,15 @@
           
 
             <!-- Closest Shop -->
-            <a class="nav-link {% if request.endpoint == 'nearest_shop.nearest_shop' %}active{% endif %}" href="{{ url_for('nearest_shop.nearest_shop') }}" aria-label="Nearest Shop" title="Nearest Shop">
+            <a class="  nav-link {% if request.endpoint == 'nearest_shop.nearest_shop' %}active{% endif %}" href="{{ url_for('nearest_shop.nearest_shop') }}" aria-label="Nearest Shop" title="Nearest Shop">
               <i class="bi bi-geo-alt fs-4 d-sm-none"></i>
               <span class="d-none d-sm-inline">Nearest Shop</span>
             </a>
 
             <!-- User info: desktop only -->
-            <span class="navbar-text d-none d-md-inline small text-body-secondary mx-2">
+            <!-- <span class="navbar-text d-none d-md-inline small text-body-secondary mx-2">
               Signed in as <strong>{{ session["username"] }}</strong>
-            </span>
+            </span> -->
 
             <!-- Logout -->
             <form method="post" action="{{ url_for('auth.logout') }}" class="m-0 d-inline">

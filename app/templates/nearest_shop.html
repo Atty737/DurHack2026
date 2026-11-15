@@ -16,7 +16,7 @@
     </div>
     <div id="map"></div>
 </div>
-<div>
+<div id="addStores" style="display:none">
     <input type="text" class="form-control" id="shopName" aria-describedby="shopName" placeholder="Enter shop name">
     <input type="text" class="form-control" id="address" aria-describedby="address" placeholder="Enter address">
     <input type="text" class="form-control" id="postcode" aria-describedby="postcode" placeholder="Enter post code">
@@ -36,6 +36,16 @@
         }
     </script>
 </div>
+<script>
+    async function checkAddingStores() {
+        response = await fetch('/nearest_shop/add_permission');
+        data = await response.json()
+        if (data["permission"]) {
+            document.getElementById("addStores").style.display = ""
+        }
+    }
+    checkAddingStores()
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     #container { 
@@ -46,7 +56,6 @@
     #sidebar { 
         width: 350px; 
         overflow-y: auto; 
-        padding: 15px; 
         box-sizing: border-box; 
         font-family: sans-serif; 
     }

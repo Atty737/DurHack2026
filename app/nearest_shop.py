@@ -11,6 +11,13 @@ def nearest_shop():
         return redirect(url_for("auth.login"))
     return render_template("nearest_shop.html")
 
+@bp.get("/nearest_shop/add_permission")
+def add_permission():
+    if session.get("user_id") == "6af8c4b7a27e1eca91243f91":
+        return jsonify({"permission":True})
+    else:
+        return jsonify({"permission":False})
+
 @bp.route("/api/stores", methods=["GET"])
 def get_stores():
     user_lat = request.args.get("lat", type=float)
@@ -20,6 +27,8 @@ def get_stores():
 
     store_list = []
     for store in stores:
+        store["latitude"], store["longitude"] = float(store["latitude"]), float(store["longitude"])
+        print(store)
         store_data = store.copy()
         if user_lat and user_lng:
             store_data["distance"] = round(get_walking_route(user_lat, user_lng, store["latitude"], store["longitude"]), 1)

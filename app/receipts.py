@@ -6,7 +6,6 @@ from uuid import uuid4
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from bson import ObjectId
 from bson.errors import InvalidId
-import pytesseract
 from werkzeug.utils import secure_filename
 
 from app.db import get_db
@@ -52,12 +51,6 @@ def upload_receipt():
             else:
                 try:
                     result = gemini_read_image(temporary_path)
-                except pytesseract.TesseractNotFoundError:
-                    flash(
-                        "Receipt processing is unavailable because Tesseract "
-                        "OCR is not installed or configured.",
-                        "warning",
-                    )
                 except FileNotFoundError:
                     flash("The uploaded receipt could not be read as an image.", "warning")
                 except errors.APIError as error:
