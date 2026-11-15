@@ -20,6 +20,12 @@
 
 <script>
     document.getElementById("genButton").addEventListener("click", GenerateRecipes);
+    document.getElementById("budget").addEventListener("keyup", KeyPress);
+    function KeyPress(event) {
+        if (event.key == "Enter"){
+            GenerateRecipes(event);
+        }
+    }
     async function GenerateRecipes(event) {
         document.getElementById("genSpinner").style.display = ""
 
