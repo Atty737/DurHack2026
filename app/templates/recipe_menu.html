@@ -4,44 +4,110 @@
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 mb-0">My Recipes</h2>
     {% if items %}
       <form
         method="post"
         action="{{ url_for('recipe_menu.delete_all_recipes') }}"
         onsubmit="return confirm('Are you sure you want to delete all your recipes?');"
+        class="m-0"
       >
-        <button type="submit" class="btn btn-danger">Delete all</button>
+        <button type="submit" class="btn btn-outline-danger btn-sm">Delete all</button>
       </form>
     {% endif %}
   </div>
 
   {% if items %}
-    <div class="table-responsive">
+    <!-- Mobile View: Clean Card Layout (< 768px) -->
+    <div class="d-md-none">
+      {% for item in items %}
+        <div class="card mb-3 shadow-sm border">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <h3 class="h5 fw-bold mb-0 text-break">{{ item["recipe_name"] }}</h3>
+              <form
+                method="post"
+                action="{{ url_for('recipe_menu.delete_recipe', item_id=item['_id']) }}"
+                class="m-0 flex-shrink-0"
+              >
+                <button type="submit" class="btn btn-success btn-sm d-inline-flex align-items-center gap-1" title="Mark as cooked">
+                  <i class="bi bi-check-lg"></i>
+                  <span>Cooked</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Ingredients -->
+            <div class="mb-3">
+              <h4 class="h6 fw-semibold text-muted text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">Ingredients</h4>
+              <ul class="mb-0 ps-3">
+                {% for ingredient in item["ingredients"] %}
+                  <li>{{ ingredient }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- Instructions Collapse -->
+            <button
+              class="btn btn-outline-primary btn-sm w-100"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#mobile-recipe-{{ loop.index }}"
+              aria-expanded="false"
+              aria-controls="mobile-recipe-{{ loop.index }}"
+            >
+              <i class="bi bi-journal-text me-1"></i> View Instructions
+            </button>
+            <div id="mobile-recipe-{{ loop.index }}" class="collapse mt-2">
+              <div class="p-3 bg-light rounded border">
+                {% if item["recipe"] is iterable and item["recipe"] is not string %}
+                  <ol class="mb-0 ps-3">
+                    {% for instruction in item["recipe"] %}
+                      <li>{{ instruction }}</li>
+                    {% endfor %}
+                  </ol>
+                {% else %}
+                  <p class="mb-0" style="white-space: pre-line;">{{ item["recipe"] }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Desktop View: Table Layout (>= 768px) -->
+    <div class="d-none d-md-block table-responsive">
       <table class="table table-striped align-middle">
         <thead>
           <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Ingredients</th>
-            <th scope="col">Recipe</th>
+            <th scope="col" style="width: 25%;">Name</th>
+            <th scope="col" style="width: 30%;">Ingredients</th>
+            <th scope="col" style="width: 35%;">Recipe</th>
+            <th scope="col" class="text-center" style="width: 10%;">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for item in items %}
             <tr>
-              <td>{{ item["recipe_name"] }}</td>
+              <td class="fw-semibold">{{ item["recipe_name"] }}</td>
               <td>
-                <ul>
-                {% for ingredient in item["ingredients"] %}
-                  <li>{{ ingredient }}</li>
-                {% endfor %}
+                <ul class="mb-0 ps-3">
+                  {% for ingredient in item["ingredients"] %}
+                    <li>{{ ingredient }}</li>
+                  {% endfor %}
                 </ul>
               </td>
               <td>
-                <ol>
-                {% for instructions in item["recipe"] %}
-                  <li>{{ instructions }}</li>
-                {% endfor %}
-                </ol>
+                {% if item["recipe"] is iterable and item["recipe"] is not string %}
+                  <ol class="mb-0 ps-3">
+                    {% for instruction in item["recipe"] %}
+                      <li>{{ instruction }}</li>
+                    {% endfor %}
+                  </ol>
+                {% else %}
+                  <p class="mb-0" style="white-space: pre-line;">{{ item["recipe"] }}</p>
+                {% endif %}
               </td>
               <td class="text-center">
                 <form
@@ -49,7 +115,9 @@
                   action="{{ url_for('recipe_menu.delete_recipe', item_id=item['_id']) }}"
                   class="d-inline"
                 >
-                  <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check"></i></button>
+                  <button type="submit" class="btn btn-success btn-sm" title="Mark as cooked">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
                 </form>
               </td>
             </tr>
