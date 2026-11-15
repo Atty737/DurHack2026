@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Home | Weekly Meal Planner{% endblock %}
+{% block title %}Home | Meal Planner{% endblock %}
 
 {% block content %}
-<h2>Welcome to the Weekly Meal Planner</h2>
+<h2>Welcome to the Meal Planner</h2>
 <script>
     async function change_text_if_logged_in() {
         const response = await fetch("/loggedin");
