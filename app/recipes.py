@@ -35,11 +35,18 @@ def GenerateRecipes():
     load_dotenv()
     budget = request.args.get("budget", type=int)
     client = genai.Client()
-
+    prompt = f"Make 7 dinner recipes where the ingredients total to under £{budget} and which can include these items they already have but you don't have to use all of them and keep the recipes interesting and different by potentially using items not in there {userItems}, return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string formatted in steps with each being seperated by '\\n'"
+    
     response = client.models.generate_content(
         model="gemini-3.5-flash-lite",
-        contents=f"Make 7 dinner recipes where the ingredients total to under £{budget} and try to use these items they already have but you don't have to use all of them and keep the recipes interesting and different {userItems}, return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string formatted in steps with each being seperated by '\\n'"
+        contents=prompt
     )
+
+    while not (result := json.loads(response.text)):
+        response = client.models.generate_content(
+            model="gemini-3.5-flash-lite",
+            contents=prompt
+        )
 
     recipes = json.loads(response.text)
     recipeNames = [recipes[0][0], recipes[1][0], recipes[2][0], recipes[3][0], recipes[4][0], recipes[5][0], recipes[6][0]]
