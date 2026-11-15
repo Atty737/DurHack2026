@@ -38,7 +38,7 @@ def GenerateRecipes():
 
     response = client.models.generate_content(
         model="gemini-3.5-flash-lite",
-        contents=f"Make 7 dinner recipes where the ingredients total to under £{budget} and try to use these items they already have but you don't have to use all of them and keep the recipes interesting and different {userItems}, return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string formatted in steps with each being seperated by '\\n'"
+        contents=f"Make 7 savoury dinner recipes (meals to feed one person, SUFFICIENTLY for an evening) where the ingredients total to under £{budget} and which can include these items they already have but you don't have to use all of them and keep the recipes interesting and different by potentially using items not in there {userItems}. In the list, give the weight of the ingredient needed, NOT the weight in {userItems}. Additionally, you don't have to use the exact name which is given in the {userItems} (e.g. Tesco Finest Loose Potatoes), just say '<weight> potatoes'. Don't use the same ingredient in any two meals. Do NOT, under ANY circumstances use the name of a supermarket or brand in the list. Return as text in a JSON format (with no ` or json at the start or end) as a list where each list is in the format [recipe_name, [List of ingredients with relevant units], the recipe instructions as a string formatted in steps with each being seperated by '\n'"
     )
 
     recipes = json.loads(response.text)
