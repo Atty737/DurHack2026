@@ -79,3 +79,5 @@ be installed separately and can be configured with the `TESSERACT_CMD`
 environment variable when it is not on PATH.
 
 Logged-in users can view their saved items at `/receipt-items`.
+
+Generative AI (Gemini and Copilot) used throughout the app to aid with development; most is hand-coded.
