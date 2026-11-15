@@ -3,144 +3,334 @@
 {% block title %}Find Nearest Shop | Weekly Meal Planner{% endblock %}
 
 {% block content %}
-<div id="container">
-    <div id="sidebar">
-        <h2>Find Nearest Shop</h2>
-        <button id="nearestShopButton" type="button" class="btn btn-primary" onclick="findNearestShop()">
-        <div id="nearestShopSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        Find stores
-        </button>
-        <div id="store-list"></div>
+<div class="py-2">
+  <!-- Header & Controls -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h2 class="h3 fw-bold mb-1">
+        <i class="bi bi-geo-alt text-primary me-1"></i>Find Nearest Shop
+      </h2>
+      <p class="text-muted small mb-0">Locate supermarkets and food shops near you.</p>
     </div>
-    <div id="map"></div>
-</div>
-<div id="addStores" style="display:none">
-    <input type="text" class="form-control" id="shopName" aria-describedby="shopName" placeholder="Enter shop name">
-    <input type="text" class="form-control" id="address" aria-describedby="address" placeholder="Enter address">
-    <input type="text" class="form-control" id="postcode" aria-describedby="postcode" placeholder="Enter post code">
-    <input type="text" class="form-control" id="latitude" aria-describedby="latitude" placeholder="Enter latitude">
-    <input type="text" class="form-control" id="longitude" aria-describedby="longitude" placeholder="Enter longitude">
-    <button id="addButton" type="button" class="btn btn-primary">Add to DB</button>
+    <div>
+      <button id="nearestShopButton" type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" onclick="findNearestShop()">
+        <span id="nearestShopSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
+          <span class="visually-hidden">Loading...</span>
+        </span>
+        <i class="bi bi-crosshair"></i>
+        <span>Find stores near me</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Add Store Section (hidden by default) -->
+  <div id="addStores" class="card shadow-sm border p-3 mb-3 bg-light" style="display:none">
+    <h6 class="fw-bold mb-2"><i class="bi bi-plus-circle me-1"></i>Add Store to Database</h6>
+    <div class="row g-2">
+      <div class="col-12 col-md-3">
+        <input type="text" class="form-control form-control-sm" id="shopName" placeholder="Enter shop name">
+      </div>
+      <div class="col-12 col-md-3">
+        <input type="text" class="form-control form-control-sm" id="address" placeholder="Enter address">
+      </div>
+      <div class="col-6 col-md-2">
+        <input type="text" class="form-control form-control-sm" id="postcode" placeholder="Enter post code">
+      </div>
+      <div class="col-6 col-md-2">
+        <input type="text" class="form-control form-control-sm" id="latitude" placeholder="Enter latitude">
+      </div>
+      <div class="col-6 col-md-2">
+        <input type="text" class="form-control form-control-sm" id="longitude" placeholder="Enter longitude">
+      </div>
+      <div class="col-12 mt-2">
+        <button id="addButton" type="button" class="btn btn-success btn-sm">Add to DB</button>
+      </div>
+    </div>
     <script>
-        document.getElementById("addButton").addEventListener("click", AddToDB)
-        async function AddToDB(event){
-            const params = new URLSearchParams({shopName: document.getElementById("shopName").value, address: document.getElementById("address").value, postcode: document.getElementById("postcode").value, latitude: document.getElementById("latitude").value, longitude: document.getElementById("longitude").value});
-            console.log(params);
-            ids = ["shopName", "address", "postcode", "latitude", "longitude"];
-            for (let i = 0; i < 5; i++){
-                document.getElementById(ids[i]).value = "";
-            }
-            const response = await fetch(`/addStore?${params}`);
+      document.getElementById("addButton").addEventListener("click", AddToDB);
+      async function AddToDB(event) {
+        const params = new URLSearchParams({
+          shopName: document.getElementById("shopName").value,
+          address: document.getElementById("address").value,
+          postcode: document.getElementById("postcode").value,
+          latitude: document.getElementById("latitude").value,
+          longitude: document.getElementById("longitude").value
+        });
+        const ids = ["shopName", "address", "postcode", "latitude", "longitude"];
+        for (let i = 0; i < ids.length; i++) {
+          document.getElementById(ids[i]).value = "";
         }
+        await fetch(`/addStore?${params}`);
+        loadStores();
+      }
     </script>
+  </div>
+
+  <!-- Responsive Layout: Stacked on mobile, side-by-side on desktop -->
+  <div class="row g-3" id="nearest-shop-row">
+    <!-- Map Column (Top on mobile, Right side on desktop) -->
+    <div class="col-12 col-md-7 col-lg-8 order-1 order-md-2">
+      <div class="card shadow-sm border overflow-hidden" id="map-card">
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <!-- Store List Column (Below map on mobile, Left side on desktop) -->
+    <div class="col-12 col-md-5 col-lg-4 order-2 order-md-1">
+      <div class="card shadow-sm border" id="sidebar-card">
+        <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center py-2 px-3">
+          <span class="fw-semibold small text-uppercase text-secondary" style="letter-spacing: 0.5px;">Stores</span>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle" id="store-count-badge">0 stores</span>
+        </div>
+        <div class="card-body p-2" id="store-list-body">
+          <div id="store-list">
+            <div class="text-center text-muted py-4">
+              <span class="spinner-border spinner-border-sm text-secondary me-1" role="status"></span>
+              <span class="small">Loading stores...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<script>
-    async function checkAddingStores() {
-        response = await fetch('/nearest_shop/add_permission');
-        data = await response.json()
-        if (data["permission"]) {
-            document.getElementById("addStores").style.display = ""
-        }
-    }
-    checkAddingStores()
-</script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-    #container { 
-        display: flex; 
-        height: 600px; /* Gives the container a fixed height */
-        width: 100%; 
+  /* Responsive Map & List Styling */
+  #map {
+    width: 100%;
+    z-index: 1;
+  }
+
+  /* Desktop View: Side by side with fixed heights */
+  @media (min-width: 768px) {
+    #map {
+      height: 560px;
     }
-    #sidebar { 
-        width: 350px; 
-        overflow-y: auto; 
-        padding: 15px; 
-        box-sizing: border-box; 
-        font-family: sans-serif; 
+    #sidebar-card {
+      height: 560px;
     }
-    #map { 
-        flex-grow: 1; 
-        height: 100%; /* Forces the map to fill the remaining space */
+    #store-list-body {
+      overflow-y: auto;
+      max-height: 505px;
     }
-    .store-card { 
-        padding: 10px; 
-        margin-top: 4px;
-        margin-bottom: 4px; 
-        border: 1px solid #ddd; 
-        border-radius: 4px; 
-        cursor: pointer; 
+  }
+
+  /* Mobile View: Map on top (full width, 320px height), Store list underneath */
+  @media (max-width: 767.98px) {
+    #map {
+      height: 320px;
     }
-    .store-card:hover { 
-        background-color: #f1f1f1; 
+    #sidebar-card {
+      height: auto;
     }
+    #store-list-body {
+      overflow-y: auto;
+      max-height: 360px;
+    }
+  }
+
+  .store-card {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 8px;
+    background-color: var(--bs-body-bg, #ffffff);
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .store-card:hover {
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+    border-color: var(--bs-primary, #0d6efd);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .store-card:last-child {
+    margin-bottom: 0;
+  }
+
+  .user-marker {
+    font-size: 24px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
 </style>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const map = L.map('map').setView([51.5074, -0.1278], 13);
+  let map;
+  let markers = [];
+  let userMarker = null;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize map
+    map = L.map('map').setView([54.7753, -1.5849], 13); // Default view centered on Durham / UK region
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    let markers = [];
+    // Initial load of stores
+    loadStores();
 
-    function loadStores(latitude = null, longitude = null) {
+    // Recalculate size after render
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
+    window.addEventListener("resize", () => {
+      if (map) map.invalidateSize();
+    });
+
+    checkAddingStores();
+  });
+
+  async function checkAddingStores() {
+    try {
+      const response = await fetch('/nearest_shop/add_permission');
+      const data = await response.json();
+      if (data && data["permission"]) {
+        const el = document.getElementById("addStores");
+        if (el) el.style.display = "";
+      }
+    } catch (e) {
+      console.warn("Could not check store add permissions", e);
+    }
+  }
+
+  function loadStores(latitude = null, longitude = null) {
     let url = '/api/stores';
-    if (latitude && longitude) { url += `?lat=${latitude}&lng=${longitude}`; }
+    if (latitude && longitude) {
+      url += `?lat=${latitude}&lng=${longitude}`;
+    }
 
     fetch(url)
-        .then(response => response.json())
-        .then(stores => {
-            const listContainer = document.getElementById('store-list');
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
+      .then(response => response.json())
+      .then(stores => {
+        const listContainer = document.getElementById('store-list');
+        const countBadge = document.getElementById('store-count-badge');
+        if (!listContainer) return;
 
-            stores.forEach(store => {
-                // Drop a pin on the map
-                const marker = L.marker([store.latitude, store.longitude]).addTo(map)
-                    .bindPopup(`<b>${store.name}</b><br>${store.address}`);
-                markers.push(marker);
+        // Clear existing markers
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        listContainer.innerHTML = '';
 
-                // Build sidebar card elements dynamically
-                const card = document.createElement('div');
-                card.className = 'store-card';
-                card.innerHTML = `<strong>${store.name}</strong><br>${store.address}, ${store.postcode}` + 
-                    (store.distance !== null ? `<br><small>Distance: ${store.distance} miles</small>` : '');
-                
-                // Clicking a card pans the map to that store
-                card.onclick = () => {
-                    map.setView([store.latitude, store.longitude], 15);
-                    marker.openPopup();
-                };
-                listContainer.appendChild(card);
-            });
+        if (!stores || stores.length === 0) {
+          listContainer.innerHTML = '<p class="text-muted small p-2 mb-0">No stores found.</p>';
+          if (countBadge) countBadge.textContent = '0 stores';
+          return;
+        }
+
+        if (countBadge) {
+          countBadge.textContent = `${stores.length} store${stores.length !== 1 ? 's' : ''}`;
+        }
+
+        const bounds = [];
+
+        stores.forEach(store => {
+          if (store.latitude && store.longitude) {
+            bounds.push([store.latitude, store.longitude]);
+
+            // Drop pin on map
+            const popupContent = `
+              <div style="font-size: 0.9rem;">
+                <strong style="color: #0d6efd;">${store.name}</strong><br>
+                <span>${store.address}</span><br>
+                <small class="text-muted">${store.postcode || ''}</small>
+                ${store.distance !== null ? `<br><span class="badge bg-primary text-white mt-1">${store.distance} miles away</span>` : ''}
+              </div>
+            `;
+            const marker = L.marker([store.latitude, store.longitude])
+              .addTo(map)
+              .bindPopup(popupContent);
+            markers.push(marker);
+
+            // Build list card
+            const card = document.createElement('div');
+            card.className = 'store-card';
+            card.innerHTML = `
+              <div class="d-flex justify-content-between align-items-start gap-1">
+                <strong class="text-body">${store.name}</strong>
+                ${store.distance !== null ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">${store.distance} mi</span>` : ''}
+              </div>
+              <div class="small text-muted mt-1">${store.address}${store.postcode ? ', ' + store.postcode : ''}</div>
+            `;
+
+            // Clicking card pans map to store
+            card.onclick = () => {
+              map.setView([store.latitude, store.longitude], 15);
+              marker.openPopup();
+              if (window.innerWidth < 768) {
+                document.getElementById('map-card')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+            };
+            listContainer.appendChild(card);
+          }
         });
+
+        // If bounds exist and no specific user location was set, fit bounds
+        if (bounds.length > 0 && !latitude && !longitude) {
+          map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+        }
+      })
+      .catch(err => {
+        console.error("Error loading stores:", err);
+        const listContainer = document.getElementById('store-list');
+        if (listContainer) {
+          listContainer.innerHTML = '<p class="text-danger small p-2 mb-0">Failed to load stores.</p>';
+        }
+      });
+  }
+
+  function findNearestShop() {
+    const spinner = document.getElementById("nearestShopSpinner");
+    const btn = document.getElementById("nearestShopButton");
+    if (spinner) spinner.style.display = "";
+    if (btn) btn.disabled = true;
+
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      if (spinner) spinner.style.display = "none";
+      if (btn) btn.disabled = false;
+      return;
     }
 
-    function findNearestShop() {
-    document.getElementById("nearestShopSpinner").style.display = ""
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            
-            // Center map on user and drop a marker
-            map.setView([lat, lng], 13);
-            L.marker([lat, lng], {
-                icon: L.divIcon({className: 'user-marker', html: '📍', iconSize: [20, 20]})
-            }).addTo(map).bindPopup("You are here").openPopup();
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
-            // Reload stores sorted by user location
-            loadStores(lat, lng);
-            document.getElementById("nearestShopSpinner").style.display = "none"
-        }, error => {
-            alert("Unable to retrieve your location.");
-        });
-    }
-    }
+        if (map) {
+          // Center map on user
+          map.setView([lat, lng], 13);
+          map.invalidateSize();
+
+          // Drop user pin
+          if (userMarker) {
+            map.removeLayer(userMarker);
+          }
+          userMarker = L.marker([lat, lng], {
+            icon: L.divIcon({ className: 'user-marker', html: '📍', iconSize: [24, 24], iconAnchor: [12, 24] })
+          }).addTo(map).bindPopup("<b>You are here</b>").openPopup();
+        }
+
+        // Reload stores sorted by distance from user
+        loadStores(lat, lng);
+
+        if (spinner) spinner.style.display = "none";
+        if (btn) btn.disabled = false;
+      },
+      error => {
+        console.warn("Geolocation error:", error);
+        alert("Unable to retrieve your location. Please check your location permissions.");
+        if (spinner) spinner.style.display = "none";
+        if (btn) btn.disabled = false;
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  }
 </script>
-
 {% endblock %}

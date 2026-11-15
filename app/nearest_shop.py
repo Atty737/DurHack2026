@@ -28,7 +28,6 @@ def get_stores():
     store_list = []
     for store in stores:
         store["latitude"], store["longitude"] = float(store["latitude"]), float(store["longitude"])
-        print(store)
         store_data = store.copy()
         if user_lat and user_lng:
             store_data["distance"] = round(get_walking_route(user_lat, user_lng, store["latitude"], store["longitude"]), 1)

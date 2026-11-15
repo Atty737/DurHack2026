@@ -87,7 +87,11 @@ def shopping_list():
     sorted_items = unchecked_items + checked_items
 
     # Check if user has saved recipes to offer a helpful sync hint if list is empty
-    saved_recipe_count = db.recipes.count_documents({"user_id": user_id})
+    count_val = db.recipes.count_documents({"user_id": user_id})
+    try:
+        saved_recipe_count = int(count_val)
+    except (TypeError, ValueError):
+        saved_recipe_count = 0
 
     return render_template(
         "shopping_list.html",
