@@ -97,7 +97,7 @@
                 // Build sidebar card elements dynamically
                 const card = document.createElement('div');
                 card.className = 'store-card';
-                card.innerHTML = `<strong>${store.name}</strong><br>${store.address}` + 
+                card.innerHTML = `<strong>${store.name}</strong><br>${store.address}, ${store.postcode}` + 
                     (store.distance !== null ? `<br><small>Distance: ${store.distance} miles</small>` : '');
                 
                 // Clicking a card pans the map to that store
