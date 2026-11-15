@@ -15,6 +15,10 @@
         required
       >
     </div>
+    <div>
+      <label for="camera" class="form-label"></label>
+      <input id="camera" type="file" accept="image/*" capture="environment">
+    </div>
     <button id="upload-receipt-button" type="submit" class="btn btn-primary">
       <span
         id="upload-receipt-spinner"
@@ -25,6 +29,7 @@
       <span id="upload-receipt-label">Upload receipt</span>
     </button>
   </form>
+
 
   <script>
     document.getElementById("receipt-upload-form").addEventListener("submit", function () {
