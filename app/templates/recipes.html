@@ -4,11 +4,10 @@
 
 {% block content %}
 <div class="mb-3">
-    
     <label for="budget" class="form-label">Budget for the week:</label>
     <div class="input-group mb-3">
         <span class="input-group-text">£</span>
-            <input type="number" class="form-control" id="budget" aria-describedby="budgetHelp" placeholder="Enter budget">
+        <input type="number" class="form-control" id="budget" aria-describedby="budgetHelp" placeholder="Enter budget">
     </div>
 </div>
 <button id="genButton" type="button" class="btn btn-primary">
@@ -19,13 +18,17 @@
 </button>
 
 <script>
+    let currentRecipes = [];
+
     document.getElementById("genButton").addEventListener("click", GenerateRecipes);
     document.getElementById("budget").addEventListener("keyup", KeyPress);
+
     function KeyPress(event) {
-        if (event.key == "Enter"){
+        if (event.key == "Enter") {
             GenerateRecipes(event);
         }
     }
+
     async function GenerateRecipes(event) {
         document.getElementById("genSpinner").style.display = "";
 
@@ -39,6 +42,7 @@
             let recipesHtml = "";
 
             if (Array.isArray(data)) {
+                currentRecipes = data;
                 data.forEach((item, index) => {
                     const i = index + 1;
                     const name = item.recipe_name || "Recipe " + i;
@@ -59,15 +63,23 @@
                     }
 
                     recipesHtml += `
-                    <p class="d-inline-flex gap-1">
+                    <p class="d-inline-flex gap-2">
                         <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
+                        <button class="btn btn-outline-success" type="button" id="save-btn-${i}" onclick="PickRecipe(${index})">
+                            <i class="bi bi-plus-lg me-1"></i>Save Recipe
+                        </button>
                     </p>
                     <div id="collapse-${i}" class="collapse">
-                        <div class="card card-body">${instructionsContent}</div>
+                        <div class="card card-body mb-3">${instructionsContent}</div>
                     </div>`;
                 });
             } else if (data && data.recipeNames) {
                 // Fallback for legacy format
+                currentRecipes = data.recipeNames.map((name, idx) => ({
+                    recipe_name: name,
+                    ingredients: (data.ingredients && data.ingredients[idx]) || [],
+                    instructions: (data.instructions && data.instructions[idx]) || []
+                }));
                 for (let i = 1; i <= data.recipeNames.length; i++) {
                     recipesHtml += "<h2>" + data.recipeNames[i - 1] + "</h2><ul>";
                     const ing = data.ingredients[i - 1] || [];
@@ -75,11 +87,14 @@
                         recipesHtml += "<li>" + ing[j] + "</li>";
                     }
                     recipesHtml += `</ul>
-                    <p class="d-inline-flex gap-1">
+                    <p class="d-inline-flex gap-2">
                         <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
+                        <button class="btn btn-outline-success" type="button" id="save-btn-${i}" onclick="PickRecipe(${i - 1})">
+                            <i class="bi bi-plus-lg me-1"></i>Save Recipe
+                        </button>
                     </p>
                     <div id="collapse-${i}" class="collapse">
-                        <div class="card card-body">${data.instructions[i - 1]}</div>
+                        <div class="card card-body mb-3">${data.instructions[i - 1]}</div>
                     </div>`;
                 }
             }
@@ -89,6 +104,45 @@
             console.error("Error generating recipes:", error);
         } finally {
             document.getElementById("genSpinner").style.display = "none";
+        }
+    }
+
+    async function PickRecipe(index) {
+        const item = currentRecipes[index];
+        if (!item) return;
+
+        const btn = document.getElementById(`save-btn-${index + 1}`);
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Saving...`;
+
+        try {
+            const response = await fetch("/api/saveRecipe", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    recipe_name: item.recipe_name,
+                    ingredients: item.ingredients,
+                    instructions: item.recipe || item.instructions
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok && result.success) {
+                btn.className = "btn btn-success";
+                btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Saved`;
+            } else {
+                btn.disabled = false;
+                btn.className = "btn btn-outline-danger";
+                btn.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Retry`;
+                alert(result.error || "Failed to save recipe");
+            }
+        } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.className = "btn btn-outline-danger";
+            btn.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Retry`;
         }
     }
 </script>
