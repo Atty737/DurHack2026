@@ -59,6 +59,10 @@
         }
       }
 
+      :root {
+        --navbar-height: 4.5rem;
+      }
+
       /* Desktop (>= 576px): Fixed at top, full text navigation */
       @media (min-width: 576px) {
         .app-navbar {
@@ -76,7 +80,7 @@
         }
 
         body {
-          padding-top: 4.5rem !important;
+          padding-top: var(--navbar-height, 4.5rem) !important;
           padding-bottom: 1.5rem !important;
         }
 
@@ -101,7 +105,33 @@
   <body>
     <!-- Mobile top header bar -->
     <header class="d-sm-none py-2 px-3 border-bottom bg-body-tertiary text-center">
-      <a class="h5 m-0 fw-bold text-decoration-none text-body" href="{{ url_for('main.index') }}">Weekly Meal Planner</a>
+      <h1 class="h5 m-0 fw-bold text-body">
+        {% block mobile_title %}
+          {% if request.endpoint == 'main.index' %}
+            Home
+          {% elif request.endpoint == 'recipes.recipes' %}
+            Recipes
+          {% elif request.endpoint == 'recipe_menu.recipe_menu' %}
+            My Recipes
+          {% elif request.endpoint == 'recipe_menu.complete_recipe' %}
+            Complete Recipe
+          {% elif request.endpoint == 'shopping_list.shopping_list' %}
+            Shopping List
+          {% elif request.endpoint == 'receipts.upload_receipt' %}
+            Scan Receipt
+          {% elif request.endpoint == 'receipts.receipt_items' %}
+            Pantry
+          {% elif request.endpoint == 'nearest_shop.nearest_shop' %}
+            Nearest Shop
+          {% elif request.endpoint == 'auth.login' %}
+            Log in
+          {% elif request.endpoint == 'auth.signup' %}
+            Sign up
+          {% else %}
+            Weekly Meal Planner
+          {% endif %}
+        {% endblock %}
+      </h1>
     </header>
 
     <!-- Navigation bar (Fixed bottom on mobile, fixed top on desktop) -->
@@ -111,7 +141,7 @@
         <a class="navbar-brand fw-bold d-none d-sm-inline-block" href="{{ url_for('main.index') }}">Weekly Meal Planner</a>
 
         <!-- Nav items: spaced evenly on mobile, aligned right on desktop -->
-        <div class="navbar-nav w-100 justify-content-around justify-content-sm-end align-items-center gap-sm-2">
+        <div class="navbar-nav w-100 justify-content-around justify-content-sm-end align-items-center flex-wrap gap-sm-1">
           <!-- Home link (desktop only) -->
           <a class="nav-link d-none d-sm-inline-block {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}" aria-label="Home" title="Home">
             <span class="d-none d-sm-inline">Home</span>
@@ -185,7 +215,7 @@
     </nav>
 
     <!-- Main Content Container -->
-    <main class="container py-3, px-0">
+    <main class="container py-3">
       <div class="container">
         {% block content %}{% endblock %}
       </div>
@@ -279,7 +309,28 @@
         toastDiv.addEventListener("hidden.bs.toast", () => toastDiv.remove());
       };
 
-      document.addEventListener("DOMContentLoaded", initExistingToasts);
+      function syncNavbarHeight() {
+        const nav = document.querySelector(".app-navbar");
+        if (nav && window.innerWidth >= 576) {
+          const height = nav.offsetHeight;
+          document.documentElement.style.setProperty("--navbar-height", height + "px");
+        } else {
+          document.documentElement.style.setProperty("--navbar-height", "0px");
+        }
+      }
+
+      window.addEventListener("resize", syncNavbarHeight);
+      document.addEventListener("DOMContentLoaded", function () {
+        initExistingToasts();
+        syncNavbarHeight();
+        if (window.ResizeObserver) {
+          const navEl = document.querySelector(".app-navbar");
+          if (navEl) {
+            new ResizeObserver(syncNavbarHeight).observe(navEl);
+          }
+        }
+      });
+      syncNavbarHeight();
     </script>
   </body>
 </html>
