@@ -9,7 +9,7 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div>
       <h2 class="h3 fw-bold mb-1">
-        <i class="bi bi-geo-alt text-primary me-1"></i>Find Nearest Shop
+        Find Nearest Shop
       </h2>
       <p class="text-muted small mb-0">Locate supermarkets and food shops near you.</p>
     </div>
@@ -18,13 +18,11 @@
         <span id="nearestShopSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
           <span class="visually-hidden">Loading...</span>
         </span>
-        <i class="bi bi-crosshair"></i>
-        <span>Find stores near me</span>
+        <span>Find shops near me</span>
       </button>
 
       <button id="navigateToButton" type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-1" style="display:none;" onclick="navigateSelectedStore()">
-        <i class="bi bi-compass"></i>
-        <span>Navigate to store</span>
+        <span>Navigate to shop</span>
       </button>
     </div>
   </div>
@@ -86,13 +84,13 @@
       <div class="card shadow-sm border" id="sidebar-card">
         <div class="card-header bg-body-tertiary d-flex justify-content-between align-items-center py-2 px-3">
           <span class="fw-semibold small text-uppercase text-secondary" style="letter-spacing: 0.5px;">Stores</span>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle" id="store-count-badge">0 stores</span>
+          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" id="store-count-badge">Location needed</span>
         </div>
         <div class="card-body p-2" id="store-list-body">
           <div id="store-list">
-            <div class="text-center text-muted py-4">
-              <span class="spinner-border spinner-border-sm text-secondary me-1" role="status"></span>
-              <span class="small">Loading stores...</span>
+            <div class="text-center text-muted py-4 px-2">
+              <i class="bi bi-geo-alt fs-2 text-secondary mb-2 d-block"></i>
+              <p class="small mb-0">Click <strong>"Find stores near me"</strong> to discover supermarkets near your location.</p>
             </div>
           </div>
         </div>
@@ -199,9 +197,6 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Initial load of stores
-    loadStores();
-
     // Recalculate size after render
     setTimeout(() => {
       map.invalidateSize();
@@ -228,10 +223,11 @@
   }
 
   function loadStores(latitude = null, longitude = null) {
-    let url = '/api/stores';
-    if (latitude && longitude) {
-      url += `?lat=${latitude}&lng=${longitude}`;
+    if (!latitude || !longitude) {
+      return;
     }
+
+    const url = `/api/stores?lat=${latitude}&lng=${longitude}`;
 
     fetch(url)
       .then(response => response.json())
@@ -246,13 +242,17 @@
         listContainer.innerHTML = '';
 
         if (!stores || stores.length === 0) {
-          listContainer.innerHTML = '<p class="text-muted small p-2 mb-0">No stores found.</p>';
-          if (countBadge) countBadge.textContent = '0 stores';
+          listContainer.innerHTML = '<p class="text-muted small p-2 mb-0">No stores found near your location.</p>';
+          if (countBadge) {
+            countBadge.textContent = '0 stores';
+            countBadge.className = 'badge bg-secondary-subtle text-secondary border border-secondary-subtle';
+          }
           return;
         }
 
         if (countBadge) {
-          countBadge.textContent = `${stores.length} store${stores.length !== 1 ? 's' : ''}`;
+          countBadge.textContent = `${stores.length} store${stores.length !== 1 ? 's' : ''} near you`;
+          countBadge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle';
         }
 
         const bounds = [];
@@ -270,7 +270,7 @@
                 ${store.distance !== null ? `<br><span class="badge bg-primary text-white mt-1">${store.distance} miles away</span>` : ''}
                 <div class="mt-2">
                   <a href="https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}" target="_blank" class="btn btn-primary btn-sm py-0 px-2 text-white text-decoration-none">
-                    <i class="bi bi-compass me-1"></i>Directions
+                    Directions
                   </a>
                 </div>
               </div>
@@ -291,7 +291,7 @@
               <div class="small text-muted mt-1">${store.address}${store.postcode ? ', ' + store.postcode : ''}</div>
               <div class="mt-2 d-flex gap-2">
                 <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 text-nowrap" onclick="event.stopPropagation(); navigateToGoogleMaps(currentUserLat, currentUserLng, ${store.latitude}, ${store.longitude});">
-                  <i class="bi bi-compass me-1"></i>Directions
+                  Directions
                 </button>
               </div>
             `;
@@ -318,9 +318,10 @@
           }
         });
 
-        // If bounds exist and no specific user location was set, fit bounds
-        if (bounds.length > 0 && !latitude && !longitude) {
-          map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+        // Fit bounds around user and nearest stores
+        if (bounds.length > 0 && latitude && longitude) {
+          bounds.push([latitude, longitude]);
+          map.fitBounds(bounds, { padding: [35, 35], maxZoom: 15 });
         }
       })
       .catch(err => {
@@ -335,8 +336,20 @@
   function findNearestShop() {
     const spinner = document.getElementById("nearestShopSpinner");
     const btn = document.getElementById("nearestShopButton");
+    const listContainer = document.getElementById('store-list');
+    const countBadge = document.getElementById('store-count-badge');
+
     if (spinner) spinner.style.display = "";
     if (btn) btn.disabled = true;
+
+    if (listContainer) {
+      listContainer.innerHTML = `
+        <div class="text-center text-muted py-4">
+          <span class="spinner-border spinner-border-sm text-primary me-1" role="status"></span>
+          <span class="small">Getting your location & finding nearby stores...</span>
+        </div>
+      `;
+    }
 
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser.");
@@ -352,7 +365,7 @@
 
         if (map) {
           // Center map on user
-          map.setView([currentUserLat, currentUserLng], 13);
+          map.setView([currentUserLat, currentUserLng], 14);
           map.invalidateSize();
 
           // Drop user pin
@@ -375,6 +388,15 @@
         alert("Unable to retrieve your location. Please check your location permissions.");
         if (spinner) spinner.style.display = "none";
         if (btn) btn.disabled = false;
+        if (listContainer) {
+          listContainer.innerHTML = `
+            <div class="text-center text-muted py-4 px-2">
+              <i class="bi bi-exclamation-circle text-warning fs-3 mb-2 d-block"></i>
+              <p class="small text-danger mb-1">Could not get your location.</p>
+              <p class="small text-muted mb-0">Please allow location access and try again.</p>
+            </div>
+          `;
+        }
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
