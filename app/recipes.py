@@ -30,7 +30,7 @@ def GenerateRecipes():
         )
     userItems = []
     for entry in items:
-        userItems.append(f"{entry.get("quantity")} {entry.get("item_name")}")
+        userItems.append(f"{entry.get('quantity')} {entry.get('item_name')}")
 
     load_dotenv()
     budget = request.args.get("budget", type=int)
