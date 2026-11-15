@@ -2,7 +2,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from google import genai
 from dotenv import load_dotenv
 from app.db import get_db
-from pymongo import MongoClient
+from datetime import datetime, timezone
 import json
 
 
@@ -48,12 +48,17 @@ def GenerateRecipes():
             contents=prompt
         )
 
-
     recipes = json.loads(response.text)
     recipeNames = [recipes[0][0], recipes[1][0], recipes[2][0], recipes[3][0], recipes[4][0], recipes[5][0], recipes[6][0]]
     ingredients = [recipes[0][1], recipes[1][1], recipes[2][1], recipes[3][1], recipes[4][1], recipes[5][1], recipes[6][1]]
-    links = [recipes[0][2], recipes[1][2], recipes[2][2], recipes[3][2], recipes[4][2], recipes[5][2], recipes[6][2]]
-    return jsonify({"recipeNames": recipeNames, "ingredients": ingredients, "links": links})
+    instructions = [recipes[0][2], recipes[1][2], recipes[2][2], recipes[3][2], recipes[4][2], recipes[5][2], recipes[6][2]]
+    items = []
+    for i in range(0, 7):
+        items.append({"user_id": session["user_id"], "recipe_name": recipeNames[i], "ingredients": ingredients[i], "recipe": instructions[i],  "created_at": datetime.now(timezone.utc)})
+    if items:
+        get_db().recipes.insert_many(items)
+
+    return jsonify({"recipeNames": recipeNames, "ingredients": ingredients, "instructions": instructions})
 
 def tryCall(response):
     try: return True, json.loads(response.text)
