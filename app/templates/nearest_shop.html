@@ -6,8 +6,8 @@
 <div id="container">
     <div id="sidebar">
         <h2>Find Nearest Shop</h2>
-        <button id="genButton" type="button" class="btn btn-primary" onclick="findNearestShop()">
-        <div id="genSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
+        <button id="nearestShopButton" type="button" class="btn btn-primary" onclick="findNearestShop()">
+        <div id="nearestShopSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
             <span class="visually-hidden">Loading...</span>
         </div>
         Find stores
@@ -91,7 +91,7 @@
     }
 
     function findNearestShop() {
-    document.getElementById("genSpinner").style.display = ""
+    document.getElementById("nearestShopSpinner").style.display = ""
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
             const lat = position.coords.latitude;
@@ -105,7 +105,7 @@
 
             // Reload stores sorted by user location
             loadStores(lat, lng);
-            document.getElementById("genSpinner").style.display = "none"
+            document.getElementById("nearestShopSpinner").style.display = "none"
         }, error => {
             alert("Unable to retrieve your location.");
         });

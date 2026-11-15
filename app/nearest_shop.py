@@ -26,8 +26,6 @@ def get_stores():
             store_data["distance"] = None
         store_list.append(store_data)
 
-    print(store_list)
-
     if user_lat and user_lng:
         store_list.sort(key=lambda x: x["distance"])
 
