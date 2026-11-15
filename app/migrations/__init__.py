@@ -5,6 +5,7 @@ from app.migrations.v002_users import upgrade as users_upgrade
 from app.migrations.v003_receipt_items import upgrade as receipt_items_upgrade
 from app.migrations.v004_receipt_items_quantity import upgrade as receipt_items_quantity_upgrade
 from app.migrations.v005_receipt_items_amount_unit import upgrade as receipt_items_amount_unit_upgrade
+from app.migrations.v006_shopping_list import upgrade as shopping_list_upgrade
 
 
 MIGRATIONS = (
@@ -13,6 +14,7 @@ MIGRATIONS = (
     ("v003_receipt_items", receipt_items_upgrade),
     ("v004_receipt_items_quantity", receipt_items_quantity_upgrade),
     ("v005_receipt_items_amount_unit", receipt_items_amount_unit_upgrade),
+    ("v006_shopping_list", shopping_list_upgrade),
 )
 
 

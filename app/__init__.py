@@ -37,6 +37,7 @@ def create_app(test_config=None):
     from app.receipts import bp as receipts_bp
     from app.recipes import bp as recipes_bp
     from app.recipe_menu import bp as recipe_menu_bp
+    from app.shopping_list import bp as shopping_list_bp
     from app.nearest_shop import bp as nearest_shop_bp
     
     app.register_blueprint(main_bp)
@@ -44,6 +45,7 @@ def create_app(test_config=None):
     app.register_blueprint(receipts_bp)
     app.register_blueprint(recipes_bp)
     app.register_blueprint(recipe_menu_bp)
+    app.register_blueprint(shopping_list_bp)
     app.register_blueprint(nearest_shop_bp)
     
     return app

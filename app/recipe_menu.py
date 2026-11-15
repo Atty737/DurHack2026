@@ -3,7 +3,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from bson import ObjectId
 from bson.errors import InvalidId
 from app.db import get_db
-from app.gemini_image import standardize_unit_and_amount
+from app.gemini_image import standardize_unit_and_amount, clean_ingredient_name
 
 bp = Blueprint("recipe_menu", __name__)
 
@@ -108,11 +108,54 @@ def recipe_menu():
         flash("Log in to view your recipes.", "info")
         return redirect(url_for("auth.login"))
 
+    db = get_db()
+    user_id = session["user_id"]
+
+    pantry_items = list(db.receipt_items.find({"user_id": user_id}))
+    pantry_by_id = {str(item["_id"]): item for item in pantry_items}
+    pantry_names = {}
+    for p in pantry_items:
+        p_name = (p.get("item_name") or "").strip().lower()
+        if p_name:
+            pantry_names.setdefault(p_name, []).append(str(p["_id"]))
+
     items = list(
-        get_db().recipes.find(
-            {"user_id": session["user_id"]},
+        db.recipes.find(
+            {"user_id": user_id},
         ).sort("created_at", -1)
     )
+
+    for item in items:
+        recipe_updated = False
+        ingredients = item.get("ingredients") or []
+        for ing in ingredients:
+            if isinstance(ing, dict):
+                pid = ing.get("pantry_item_id")
+                if pid and str(pid) in pantry_by_id:
+                    if not ing.get("in_pantry"):
+                        ing["in_pantry"] = True
+                        recipe_updated = True
+                elif pid and str(pid) not in pantry_by_id:
+                    # Item was deleted from pantry
+                    ing["in_pantry"] = False
+                    ing["pantry_item_id"] = None
+                    recipe_updated = True
+                elif not pid:
+                    # If ingredient was marked Need to buy, check if matching pantry item exists
+                    ing_name = (ing.get("name") or ing.get("item") or "").strip()
+                    cname = clean_ingredient_name(ing_name, ing.get("amount"), ing.get("unit")).strip().lower()
+                    if cname in pantry_names:
+                        matched_pid = pantry_names[cname][0]
+                        ing["in_pantry"] = True
+                        ing["pantry_item_id"] = matched_pid
+                        recipe_updated = True
+
+        if recipe_updated:
+            db.recipes.update_one(
+                {"_id": item["_id"], "user_id": user_id},
+                {"$set": {"ingredients": ingredients}}
+            )
+
     return render_template("recipe_menu.html", items=items)
 
 

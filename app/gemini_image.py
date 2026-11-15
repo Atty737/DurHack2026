@@ -2,6 +2,7 @@ from google import genai
 from google.genai import errors
 from dotenv import load_dotenv
 import json
+import re
 
 
 def format_gemini_error(err: Exception) -> str:
@@ -37,6 +38,18 @@ def clean_json_text(text: str) -> str:
         if lines and lines[-1].strip() == "```":
             lines = lines[:-1]
         cleaned = "\n".join(lines).strip()
+    return cleaned
+
+
+def clean_ingredient_name(name: str, amount=None, unit=None) -> str:
+    """Extract clean food item name by stripping leading amounts and numbers."""
+    if not name or not isinstance(name, str):
+        return ""
+    cleaned = name.strip()
+    pattern = r"^(?:[\d\.\/]+)\s*(?:(?:g|kg|ml|ltr|litres?|grams?|oz|lbs?|tbsp|tsp|cups?|pinches?|tins?|cans?|qty|pieces?|x)\b)?\s*(?:of\s+)?"
+    res = re.sub(pattern, "", cleaned, flags=re.IGNORECASE).strip()
+    if res and len(res) > 1:
+        return res[0].upper() + res[1:]
     return cleaned
 
 

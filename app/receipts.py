@@ -89,6 +89,7 @@ def upload_receipt():
 
 
 @bp.get("/receipt-items")
+@bp.get("/pantry")
 def receipt_items():
     if not session.get("user_id"):
         flash("Log in to view your receipt items.", "info")
