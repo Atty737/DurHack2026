@@ -29,7 +29,13 @@
           {% for item in items %}
             <tr>
               <td>{{ item["recipe_name"] }}</td>
-              <td>{{ item["ingredients"] }}</td>
+              <td>
+                <ul>
+                {% for ingredient in item["ingredients"] %}
+                  <li>{{ ingredient }}</li>
+                  {% endfor %}
+                </ul>
+              </td>
               <td>{{ item["recipe"] }}</td>
               <td class="text-center">
                 <form
