@@ -17,48 +17,66 @@
 
   {% if items %}
     <div class="table-responsive">
-      <table class="table table-striped align-middle">
+      <table id="pantry-table" class="table table-striped align-middle">
         <thead>
           <tr>
-            <th scope="col">Item</th>
-            <th scope="col">Price</th>
-            <th scope="col" class="text-center">Amount</th>
-            <th scope="col" class="text-center">Unit</th>
-            <th scope="col">Date</th>
+            <th scope="col" class="sortable-header" data-col="0" data-type="text" title="Click to sort by Item" style="cursor: pointer; user-select: none;">
+              <span class="d-inline-flex align-items-center gap-1">
+                Item
+                <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
+              </span>
+            </th>
+            <th scope="col" class="sortable-header" data-col="1" data-type="num" title="Click to sort by Price" style="cursor: pointer; user-select: none;">
+              <span class="d-inline-flex align-items-center gap-1">
+                Price
+                <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
+              </span>
+            </th>
+            <th scope="col" class="sortable-header text-center" data-col="2" data-type="num" title="Click to sort by Amount" style="cursor: pointer; user-select: none;">
+              <span class="d-inline-flex align-items-center gap-1">
+                Amount
+                <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
+              </span>
+            </th>
+            <th scope="col" class="sortable-header" data-col="3" data-type="num" title="Click to sort by Date" style="cursor: pointer; user-select: none;">
+              <span class="d-inline-flex align-items-center gap-1">
+                Date
+                <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
+              </span>
+            </th>
             <th scope="col" class="text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for item in items %}
             <tr>
-              <td>{{ item["item_name"] }}</td>
-              <td>
+              <td data-sort="{{ item.item_name | lower }}">{{ item["item_name"] }}</td>
+              <td data-sort="{{ item.price if item.price is not none else -1 }}">
                 {% if item["price"] is not none %}
                   £{{ "%.2f"|format(item["price"]) }}
                 {% else %}
                   —
                 {% endif %}
               </td>
-              <td class="text-center">
+              <td class="text-center" data-sort="{{ item.amount if item.get('amount') is not none else (item.quantity if item.get('quantity') is not none else -1) }}">
                 {% if item.get("amount") is not none %}
-                  {{ item.amount }}
+                  {{ item.amount }} {{ item.get("unit") or "qty" }}
                 {% elif item.get("quantity") is not none %}
-                  {{ item.quantity }}
+                  {{ item.quantity }} {{ item.get("unit") or "qty" }}
                 {% else %}
                   —
                 {% endif %}
               </td>
-              <td class="text-center">
-                {{ item.get("unit") or "qty" }}
+              <td data-sort="{{ item.created_at.timestamp() if item.get('created_at') else 0 }}">
+                {{ item["created_at"].strftime("%d/%m/%Y at %H:%M") if item.get("created_at") else "—" }}
               </td>
-              <td>{{ item["created_at"].strftime("%d/%m/%Y at %H:%M") }}</td>
               <td class="text-center">
                 <form
                   method="post"
                   action="{{ url_for('receipts.delete_receipt_item', item_id=item['_id']) }}"
                   class="d-inline"
                 >
-                  <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash3"></i></button>
+                  <button type="submit" class="btn btn-danger btn-sm" title="Delete item"><i class="bi bi-trash3"></i></button>
                 </form>
               </td>
             </tr>
@@ -66,6 +84,73 @@
         </tbody>
       </table>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pantry-table");
+        if (!table) return;
+
+        const tbody = table.querySelector("tbody");
+        const headers = table.querySelectorAll(".sortable-header");
+        let currentSort = { col: -1, asc: true };
+
+        headers.forEach(header => {
+          header.addEventListener("click", function () {
+            const colIndex = parseInt(this.dataset.col, 10);
+            const isNum = this.dataset.type === "num";
+            const isAsc = currentSort.col === colIndex ? !currentSort.asc : true;
+            currentSort = { col: colIndex, asc: isAsc };
+
+            // Update header icons
+            headers.forEach(h => {
+              const icon = h.querySelector(".sort-icon");
+              if (!icon) return;
+              if (h === header) {
+                icon.className = isAsc
+                  ? "bi bi-arrow-up text-primary small sort-icon"
+                  : "bi bi-arrow-down text-primary small sort-icon";
+              } else {
+                icon.className = "bi bi-arrow-down-up text-muted small sort-icon";
+              }
+            });
+
+            // Sort rows
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            rows.sort((rowA, rowB) => {
+              const cellA = rowA.children[colIndex];
+              const cellB = rowB.children[colIndex];
+
+              const rawA = cellA ? (cellA.dataset.sort ?? cellA.textContent.trim()) : "";
+              const rawB = cellB ? (cellB.dataset.sort ?? cellB.textContent.trim()) : "";
+
+              let cmp = 0;
+              if (isNum) {
+                const numA = parseFloat(rawA);
+                const numB = parseFloat(rawB);
+                const validA = !isNaN(numA);
+                const validB = !isNaN(numB);
+                if (validA && validB) {
+                  cmp = numA - numB;
+                } else if (validA) {
+                  cmp = 1;
+                } else if (validB) {
+                  cmp = -1;
+                } else {
+                  cmp = 0;
+                }
+              } else {
+                cmp = rawA.localeCompare(rawB, undefined, { sensitivity: "base" });
+              }
+
+              return isAsc ? cmp : -cmp;
+            });
+
+            // Re-append sorted rows
+            rows.forEach(r => tbody.appendChild(r));
+          });
+        });
+      });
+    </script>
   {% else %}
     <p>You do not yet have any saved ingredients.</p>
   {% endif %}
