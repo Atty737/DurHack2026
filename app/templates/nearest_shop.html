@@ -16,6 +16,26 @@
     </div>
     <div id="map"></div>
 </div>
+<div>
+    <input type="text" class="form-control" id="shopName" aria-describedby="shopName" placeholder="Enter shop name">
+    <input type="text" class="form-control" id="address" aria-describedby="address" placeholder="Enter address">
+    <input type="text" class="form-control" id="postcode" aria-describedby="postcode" placeholder="Enter post code">
+    <input type="text" class="form-control" id="latitude" aria-describedby="latitude" placeholder="Enter latitude">
+    <input type="text" class="form-control" id="longitude" aria-describedby="longitude" placeholder="Enter longitude">
+    <button id="addButton" type="button" class="btn btn-primary">Add to DB</button>
+    <script>
+        document.getElementById("addButton").addEventListener("click", AddToDB)
+        async function AddToDB(event){
+            const params = new URLSearchParams({shopName: document.getElementById("shopName").value, address: document.getElementById("address").value, postcode: document.getElementById("postcode").value, latitude: document.getElementById("latitude").value, longitude: document.getElementById("longitude").value});
+            console.log(params);
+            ids = ["shopName", "address", "postcode", "latitude", "longitude"];
+            for (let i = 0; i < 5; i++){
+                document.getElementById(ids[i]).value = "";
+            }
+            const response = await fetch(`/addStore?${params}`);
+        }
+    </script>
+</div>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     #container { 
@@ -112,4 +132,5 @@
     }
     }
 </script>
+
 {% endblock %}
