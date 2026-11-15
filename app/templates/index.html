@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Home | Weekly Meal Planner{% endblock %}
+{% block title %}Home | Meal Planner{% endblock %}
 
 {% block content %}
-<h2>Welcome to the Weekly Meal Planner</h2>
+<h2>Welcome to the Meal Planner</h2>
 <script>
     async function change_text_if_logged_in() {
         const response = await fetch("/loggedin");
@@ -18,7 +18,7 @@
 </script>
 <p id="first_paragraph">This page explains the functionality of the website.</p>
 <h2>Recipes</h2>
-<p>Recipes allows you to generate a recipe for every dinner of the week. It generates unique meals using items in your pantry and keeps within your budget for any extra items.</p>
+<p>Recipes generates unique meals using items in your pantry and keeps within your budget for any extra items.</p>
 <h2>Scan Receipt</h2>
 <p>Scan Receipt allows you to take a photo of a receipt from any supermarket and it then extracts the food items you bought and adds them to your pantry. This is then used to help generate recipes</p>
 <h2>Pantry</h2>
@@ -28,5 +28,5 @@
 <h2>Shopping List</h2>
 <p>Ingredients needed for your saved recipes that you don't have in your pantry are automatically added here. You can tick them off as you shop and add them directly to your pantry.</p>
 <h2>Nearest Shop</h2>
-<p>This displays the shops in order of distance to your location. It shows these on whilst showing where you are</p>
+<p>This displays the shops in order of distance to your location. It shows these on a map whilst showing where you are, and allows you to open Google Maps to direct you.</p>
 {% endblock %}

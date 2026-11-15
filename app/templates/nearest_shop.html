@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Find Nearest Shop | Weekly Meal Planner{% endblock %}
+{% block mobile_title %}Nearest Shop{% endblock %}
 
 {% block content %}
 <div class="py-2">
@@ -12,13 +13,18 @@
       </h2>
       <p class="text-muted small mb-0">Locate supermarkets and food shops near you.</p>
     </div>
-    <div>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
       <button id="nearestShopButton" type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" onclick="findNearestShop()">
         <span id="nearestShopSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none">
           <span class="visually-hidden">Loading...</span>
         </span>
         <i class="bi bi-crosshair"></i>
         <span>Find stores near me</span>
+      </button>
+
+      <button id="navigateToButton" type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-1" style="display:none;" onclick="navigateSelectedStore()">
+        <i class="bi bi-compass"></i>
+        <span>Navigate to store</span>
       </button>
     </div>
   </div>
@@ -61,7 +67,7 @@
           document.getElementById(ids[i]).value = "";
         }
         await fetch(`/addStore?${params}`);
-        loadStores();
+        loadStores(currentUserLat, currentUserLng);
       }
     </script>
   </div>
@@ -141,7 +147,7 @@
     transition: transform 0.1s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .store-card:hover {
+  .store-card:hover, .store-card.active-store {
     background-color: var(--bs-tertiary-bg, #f8f9fa);
     border-color: var(--bs-primary, #0d6efd);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
@@ -162,6 +168,27 @@
   let map;
   let markers = [];
   let userMarker = null;
+  let currentUserLat = null;
+  let currentUserLng = null;
+  let selectedStore = null;
+
+  function navigateToGoogleMaps(user_lat, user_long, store_lat, store_long) {
+    let url;
+    if (user_lat && user_long) {
+      url = `https://www.google.com/maps/dir/${user_lat},${user_long}/${store_lat},${store_long}`;
+    } else {
+      url = `https://www.google.com/maps/dir/?api=1&destination=${store_lat},${store_long}`;
+    }
+    window.open(url, "_blank");
+  }
+
+  function navigateSelectedStore() {
+    if (!selectedStore) {
+      alert("Please select a store first.");
+      return;
+    }
+    navigateToGoogleMaps(currentUserLat, currentUserLng, selectedStore.latitude, selectedStore.longitude);
+  }
 
   document.addEventListener("DOMContentLoaded", function () {
     // Initialize map
@@ -241,6 +268,11 @@
                 <span>${store.address}</span><br>
                 <small class="text-muted">${store.postcode || ''}</small>
                 ${store.distance !== null ? `<br><span class="badge bg-primary text-white mt-1">${store.distance} miles away</span>` : ''}
+                <div class="mt-2">
+                  <a href="https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}" target="_blank" class="btn btn-primary btn-sm py-0 px-2 text-white text-decoration-none">
+                    <i class="bi bi-compass me-1"></i>Directions
+                  </a>
+                </div>
               </div>
             `;
             const marker = L.marker([store.latitude, store.longitude])
@@ -257,10 +289,25 @@
                 ${store.distance !== null ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">${store.distance} mi</span>` : ''}
               </div>
               <div class="small text-muted mt-1">${store.address}${store.postcode ? ', ' + store.postcode : ''}</div>
+              <div class="mt-2 d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 text-nowrap" onclick="event.stopPropagation(); navigateToGoogleMaps(currentUserLat, currentUserLng, ${store.latitude}, ${store.longitude});">
+                  <i class="bi bi-compass me-1"></i>Directions
+                </button>
+              </div>
             `;
 
             // Clicking card pans map to store
             card.onclick = () => {
+              selectedStore = store;
+              document.querySelectorAll('.store-card').forEach(c => c.classList.remove('active-store'));
+              card.classList.add('active-store');
+
+              const navBtn = document.getElementById("navigateToButton");
+              if (navBtn) {
+                navBtn.style.display = "inline-flex";
+                navBtn.title = `Directions to ${store.name}`;
+              }
+
               map.setView([store.latitude, store.longitude], 15);
               marker.openPopup();
               if (window.innerWidth < 768) {
@@ -300,25 +347,25 @@
 
     navigator.geolocation.getCurrentPosition(
       position => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+        currentUserLat = position.coords.latitude;
+        currentUserLng = position.coords.longitude;
 
         if (map) {
           // Center map on user
-          map.setView([lat, lng], 13);
+          map.setView([currentUserLat, currentUserLng], 13);
           map.invalidateSize();
 
           // Drop user pin
           if (userMarker) {
             map.removeLayer(userMarker);
           }
-          userMarker = L.marker([lat, lng], {
+          userMarker = L.marker([currentUserLat, currentUserLng], {
             icon: L.divIcon({ className: 'user-marker', html: '📍', iconSize: [24, 24], iconAnchor: [12, 24] })
           }).addTo(map).bindPopup("<b>You are here</b>").openPopup();
         }
 
         // Reload stores sorted by distance from user
-        loadStores(lat, lng);
+        loadStores(currentUserLat, currentUserLng);
 
         if (spinner) spinner.style.display = "none";
         if (btn) btn.disabled = false;
