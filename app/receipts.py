@@ -35,29 +35,30 @@ def save_receipt_temporarily(upload):
 @bp.route("/upload-receipt", methods=("GET", "POST"))
 def upload_receipt():
     if not session.get("user_id"):
-        flash("Log in to upload a receipt.")
+        flash("Log in to upload a receipt.", "info")
         return redirect(url_for("auth.login"))
 
     if request.method == "POST":
         upload = request.files.get("receipt")
 
         if upload is None or not upload.filename:
-            flash("Choose a receipt image to upload.")
+            flash("Choose a receipt image to upload.", "warning")
         else:
             try:
                 temporary_path = save_receipt_temporarily(upload)
             except ValueError as error:
-                flash(str(error))
+                flash(str(error), "warning")
             else:
                 try:
                     result = gemini_read_image(temporary_path)
                 except pytesseract.TesseractNotFoundError:
                     flash(
                         "Receipt processing is unavailable because Tesseract "
-                        "OCR is not installed or configured."
+                        "OCR is not installed or configured.",
+                        "warning",
                     )
                 except FileNotFoundError:
-                    flash("The uploaded receipt could not be read as an image.")
+                    flash("The uploaded receipt could not be read as an image.", "warning")
                 else:
                     receipt_id = uuid4().hex
                     items = [
@@ -74,7 +75,7 @@ def upload_receipt():
                     if items:
                         get_db().receipt_items.insert_many(items)
 
-                    flash(f"{len(items)} items uploaded and added to your pantry")
+                    flash(f"{len(items)} items uploaded and added to your pantry", "success")
                     return render_template(
                         "upload_receipt.html",
                         uploaded=True,
@@ -90,7 +91,7 @@ def upload_receipt():
 @bp.get("/receipt-items")
 def receipt_items():
     if not session.get("user_id"):
-        flash("Log in to view your receipt items.")
+        flash("Log in to view your receipt items.", "info")
         return redirect(url_for("auth.login"))
 
     items = list(
@@ -104,22 +105,22 @@ def receipt_items():
 @bp.post("/receipt-items/<item_id>/delete")
 def delete_receipt_item(item_id):
     if not session.get("user_id"):
-        flash("Log in to delete receipt items.")
+        flash("Log in to delete receipt items.", "info")
         return redirect(url_for("auth.login"))
 
     try:
         object_id = ObjectId(item_id)
     except InvalidId:
-        flash("That receipt item does not exist.")
+        flash("That receipt item does not exist.", "warning")
         return redirect(url_for("receipts.receipt_items"))
 
     result = get_db().receipt_items.delete_one(
         {"_id": object_id, "user_id": session["user_id"]}
     )
     if result.deleted_count:
-        flash("Receipt item deleted.")
+        flash("Receipt item deleted.", "success")
     else:
-        flash("That receipt item does not exist.")
+        flash("That receipt item does not exist.", "warning")
 
     return redirect(url_for("receipts.receipt_items"))
 
@@ -127,11 +128,11 @@ def delete_receipt_item(item_id):
 @bp.post("/receipt-items/delete-all")
 def delete_all_receipt_items():
     if not session.get("user_id"):
-        flash("Log in to delete receipt items.")
+        flash("Log in to delete receipt items.", "info")
         return redirect(url_for("auth.login"))
 
     result = get_db().receipt_items.delete_many(
         {"user_id": session["user_id"]}
     )
-    flash(f"Deleted {result.deleted_count} item(s) from your pantry.")
+    flash(f"Deleted {result.deleted_count} item(s) from your pantry.", "success")
     return redirect(url_for("receipts.receipt_items"))

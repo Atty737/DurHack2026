@@ -11,7 +11,7 @@ bp = Blueprint("recipes", __name__)
 @bp.get("/recipes")
 def recipes():
     if not session.get("user_id"):
-        flash("Log in to view recipes.")
+        flash("Log in to view recipes.", "info")
         return redirect(url_for("auth.login"))
 
     return render_template("recipes.html")
