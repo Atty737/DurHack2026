@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request, session, flash, redirect, url_for
 from app.db import get_db
+import requests
 
 bp = Blueprint("nearest_shop", __name__)
 
@@ -31,8 +32,6 @@ def get_stores():
 
     return jsonify(store_list)
 
-import requests
-
 def get_walking_route(user_lat, user_lng, store_lat, store_lng):
     url = f"http://router.project-osrm.org/route/v1/walking/{user_lng},{user_lat};{store_lng},{store_lat}?overview=false"
     
@@ -46,3 +45,11 @@ def get_walking_route(user_lat, user_lng, store_lat, store_lng):
             return distance_miles
             
     return None, None
+
+
+@bp.route("/addStore")
+def addStore():
+    entry = {"address": request.args.get("address"), "name": request.args.get("shopName"), "postcode": request.args.get("postcode"), "latitude": request.args.get("latitude"), "longitude": request.args.get("longitude")}
+    print(entry)
+    get_db().stores.insert_one(entry)
+    return jsonify()

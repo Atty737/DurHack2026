@@ -101,20 +101,9 @@
   <body>
     <!-- Mobile top header bar -->
     <header class="d-sm-none py-2 px-3 border-bottom bg-body-tertiary text-center">
-      {% set page_titles = {
-        'main.index': 'Weekly Meal Planner',
-        'recipes.recipes': 'Recipes',
-        'receipts.upload_receipt': 'Scan Receipt',
-        'receipts.receipt_items': 'Pantry',
-        'recipe_menu.recipe_menu': 'My Recipes',
-        'nearest_shop.nearest_shop': 'Nearest Shop',
-        'auth.login': 'Log In',
-        'auth.signup': 'Sign Up'
-    } %}
-    {% set current_title = page_titles.get(request.endpoint, 'Weekly Meal Planner') %}
-    <a class="h5 m-0 fw-bold text-decoration-none text-body" href="{{ url_for('main.index') }}">{{ current_title }}</a>
+      <a class="h5 m-0 fw-bold text-decoration-none text-body" href="{{ url_for('main.index') }}"></a>
     </header>
-    
+
     <!-- Navigation bar (Fixed bottom on mobile, fixed top on desktop) -->
     <nav class="navbar navbar-expand app-navbar">
       <div class="container">
@@ -150,13 +139,13 @@
             
             <!-- Recipe menu -->
             <a class="nav-link {% if request.endpoint == 'recipe_menu.recipe_menu' %}active{% endif %}" href="{{ url_for('recipe_menu.recipe_menu') }}" aria-label="My Recipes" title="My Recipes">
-              <i class="bi bi-bookmark fs-4 d-sm-none"></i>
+              <i class="bi bi-basket fs-4 d-sm-none"></i>
               <span class="d-none d-sm-inline">My Recipes</span>
             </a>
 
             <!-- Closest Shop -->
             <a class="nav-link {% if request.endpoint == 'nearest_shop.nearest_shop' %}active{% endif %}" href="{{ url_for('nearest_shop.nearest_shop') }}" aria-label="Nearest Shop" title="Nearest Shop">
-              <i class="bi bi-shop fs-4 d-sm-none"></i>
+              <i class="bi bi-basket fs-4 d-sm-none"></i>
               <span class="d-none d-sm-inline">Nearest Shop</span>
             </a>
 
