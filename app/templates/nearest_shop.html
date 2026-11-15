@@ -12,6 +12,16 @@
         </div>
         Find stores
         </button>
+        <button id="navigateToButton" type="button" class="btn btn-primary" onclick="print()">Navigate to store</button>
+        <script>
+            function navigateToGoogleMaps(user_lat, user_long, store_lat, store_long) {
+                window.location.href = `https://www.google.com/maps/dir/${user_lat},${user_long}/${store_lat},${store_long}`;
+            }
+
+            function print() {
+                console.log("Hello world")
+            }
+        </script>
         <div id="store-list"></div>
     </div>
     <div id="map"></div>
@@ -112,6 +122,10 @@
                 
                 // Clicking a card pans the map to that store
                 card.onclick = () => {
+                    let navButton = document.getElementById("navigateToButton")
+                    navButton.onclick = () => {
+                        navigateToGoogleMaps(latitude, longitude, store.latitude, store.longitude);
+                    }; 
                     map.setView([store.latitude, store.longitude], 15);
                     marker.openPopup();
                 };
