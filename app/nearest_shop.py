@@ -1,10 +1,13 @@
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, session, flash, redirect, url_for
 from app.db import get_db
 
 bp = Blueprint("nearest_shop", __name__)
 
 @bp.get("/nearest_shop")
 def nearest_shop():
+    if not session.get("user_id"):
+        flash("Log in to view recipes.", "info")
+        return redirect(url_for("auth.login"))
     return render_template("nearest_shop.html")
 
 @bp.route("/api/stores", methods=["GET"])

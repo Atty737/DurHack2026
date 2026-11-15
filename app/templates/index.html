@@ -1,10 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Home | Weekly Meal Planner{% endblock %}
 
 {% block content %}
 <h2>Welcome to the Weekly Meal Planner</h2>
-<p>Sign Up or Login using the buttons in the navbar. This page explains the functionality of the website.</p>
+<script>
+    async function change_text_if_logged_in() {
+        const response = await fetch("/loggedin");
+        const data = await response.json()
+        console.log(data["logged_in"])
+        if (!data.logged_in) {
+            document.getElementById("first_paragraph").innerText="Sign Up or Login using the buttons in the navbar. This page explains the functionality of the website."
+        }
+    }
+
+    change_text_if_logged_in()
+</script>
+<p id="first_paragraph">This page explains the functionality of the website.</p>
 <h2>Recipes</h2>
 <p>Recipes allows you to generate a recipe for every dinner of the week. It generates unique meals using items in your pantry and keeps within your budget for any extra items.</p>
 <h2>Scan Receipt</h2>
