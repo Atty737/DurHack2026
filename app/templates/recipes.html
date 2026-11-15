@@ -27,30 +27,69 @@
         }
     }
     async function GenerateRecipes(event) {
-        document.getElementById("genSpinner").style.display = ""
+        document.getElementById("genSpinner").style.display = "";
 
-        const params = new URLSearchParams({budget: document.getElementById("budget").value});
+        const budgetInput = document.getElementById("budget");
+        const params = new URLSearchParams({budget: budgetInput.value});
 
-        const response = await fetch(`/api/recipeGenerate?${params}`);
-        const data = await response.json();
-        console.log(data)
-        let recipes = ""
-        for (let i = 1; i < 8; i++){
-            recipes = recipes + "<h2>" + data.recipeNames[i - 1] + "</h2><ul>";
-            for (let j = 0; j < data.ingredients[i - 1].length; j++) {
-                recipes = recipes + "<li>" + data.ingredients[i - 1][j] + "</li>";
-            } 
-            recipes = recipes +  `</ul>
-            <p class="d-inline-flex gap-1">
-            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
-            </p>
-            <div id="collapse-${i}" class="collapse">
-            <div class="card card-body">${data.instructions[i - 1]}</div>
-            </div>`;         
+        try {
+            const response = await fetch(`/api/recipeGenerate?${params}`);
+            const data = await response.json();
+
+            let recipesHtml = "";
+
+            if (Array.isArray(data)) {
+                data.forEach((item, index) => {
+                    const i = index + 1;
+                    const name = item.recipe_name || "Recipe " + i;
+                    const ingredients = item.ingredients || [];
+                    const instructions = item.recipe || item.instructions || [];
+
+                    recipesHtml += "<h2>" + name + "</h2><ul>";
+                    for (let j = 0; j < ingredients.length; j++) {
+                        recipesHtml += "<li>" + ingredients[j] + "</li>";
+                    }
+                    recipesHtml += "</ul>";
+
+                    let instructionsContent = "";
+                    if (Array.isArray(instructions)) {
+                        instructionsContent = '<ol class="mb-0 ps-3">' + instructions.map(step => "<li>" + step + "</li>").join("") + "</ol>";
+                    } else if (typeof instructions === "string") {
+                        instructionsContent = instructions.replace(/\n/g, "<br>");
+                    }
+
+                    recipesHtml += `
+                    <p class="d-inline-flex gap-1">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
+                    </p>
+                    <div id="collapse-${i}" class="collapse">
+                        <div class="card card-body">${instructionsContent}</div>
+                    </div>`;
+                });
+            } else if (data && data.recipeNames) {
+                // Fallback for legacy format
+                for (let i = 1; i <= data.recipeNames.length; i++) {
+                    recipesHtml += "<h2>" + data.recipeNames[i - 1] + "</h2><ul>";
+                    const ing = data.ingredients[i - 1] || [];
+                    for (let j = 0; j < ing.length; j++) {
+                        recipesHtml += "<li>" + ing[j] + "</li>";
+                    }
+                    recipesHtml += `</ul>
+                    <p class="d-inline-flex gap-1">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
+                    </p>
+                    <div id="collapse-${i}" class="collapse">
+                        <div class="card card-body">${data.instructions[i - 1]}</div>
+                    </div>`;
+                }
+            }
+
+            document.getElementById("recipes").innerHTML = recipesHtml;
+        } catch (error) {
+            console.error("Error generating recipes:", error);
+        } finally {
+            document.getElementById("genSpinner").style.display = "none";
         }
-
-        document.getElementById("genSpinner").style.display = "none"
-        document.getElementById("recipes").innerHTML = recipes;
     }
 </script>
 <div id="recipes"></div>
