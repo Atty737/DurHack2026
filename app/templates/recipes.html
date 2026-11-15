@@ -39,6 +39,16 @@
             const response = await fetch(`/api/recipeGenerate?${params}`);
             const data = await response.json();
 
+            if (!response.ok || (data && data.error)) {
+                const errMsg = (data && data.error) ? data.error : "Failed to generate recipes. Please try again.";
+                if (window.showToast) {
+                    window.showToast(errMsg, "danger");
+                } else {
+                    alert(errMsg);
+                }
+                return;
+            }
+
             let recipesHtml = "";
 
             if (Array.isArray(data)) {
@@ -49,9 +59,19 @@
                     const ingredients = item.ingredients || [];
                     const instructions = item.recipe || item.instructions || [];
 
-                    recipesHtml += "<h2>" + name + "</h2><ul>";
+                    recipesHtml += "<h2>" + name + "</h2><ul class='mb-2'>";
                     for (let j = 0; j < ingredients.length; j++) {
-                        recipesHtml += "<li>" + ingredients[j] + "</li>";
+                        const ing = ingredients[j];
+                        if (typeof ing === "object" && ing !== null) {
+                            const ingName = ing.name || ing.item || "";
+                            if (ing.in_pantry) {
+                                recipesHtml += `<li><span class="text-success fw-medium">${ingName}</span> <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle ms-1"><i class="bi bi-check2"></i> In pantry</span></li>`;
+                            } else {
+                                recipesHtml += `<li><span>${ingName}</span> <span class="badge bg-light text-muted border ms-1">Need to buy</span></li>`;
+                            }
+                        } else {
+                            recipesHtml += `<li>${ing}</li>`;
+                        }
                     }
                     recipesHtml += "</ul>";
 
@@ -102,6 +122,11 @@
             document.getElementById("recipes").innerHTML = recipesHtml;
         } catch (error) {
             console.error("Error generating recipes:", error);
+            if (window.showToast) {
+                window.showToast("Failed to connect to recipe generator. Please try again.", "danger");
+            } else {
+                alert("Failed to connect to recipe generator. Please try again.");
+            }
         } finally {
             document.getElementById("genSpinner").style.display = "none";
         }
@@ -132,17 +157,28 @@
             if (response.ok && result.success) {
                 btn.className = "btn btn-success";
                 btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Saved`;
+                if (window.showToast) {
+                    window.showToast(result.message || `Saved '${item.recipe_name}' to your recipes.`, "success");
+                }
             } else {
                 btn.disabled = false;
                 btn.className = "btn btn-outline-danger";
                 btn.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Retry`;
-                alert(result.error || "Failed to save recipe");
+                const msg = result.error || "Failed to save recipe";
+                if (window.showToast) {
+                    window.showToast(msg, "danger");
+                } else {
+                    alert(msg);
+                }
             }
         } catch (err) {
             console.error(err);
             btn.disabled = false;
             btn.className = "btn btn-outline-danger";
             btn.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>Retry`;
+            if (window.showToast) {
+                window.showToast("An unexpected error occurred while saving the recipe.", "danger");
+            }
         }
     }
 </script>

@@ -187,42 +187,40 @@
     </main>
 
     <!-- Toast Notifications Container (Bottom Right) -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
-          {% for category, message in messages %}
-            {% set cat = category if category in ['success', 'info', 'warning', 'danger'] else ('danger' if category == 'error' else 'info') %}
-            {% if cat == 'success' %}
-              {% set icon = 'bi-check-circle-fill' %}
-              {% set title = 'Success' %}
-            {% elif cat == 'warning' %}
-              {% set icon = 'bi-exclamation-triangle-fill' %}
-              {% set title = 'Warning' %}
-            {% elif cat == 'danger' %}
-              {% set icon = 'bi-exclamation-octagon-fill' %}
-              {% set title = 'Error' %}
-            {% else %}
-              {% set icon = 'bi-info-circle-fill' %}
-              {% set title = 'Info' %}
-            {% endif %}
-            <div class="toast shadow" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
-              <div class="toast-header">
-                <i class="bi {{ icon }} text-{{ cat }} me-2"></i>
-                <strong class="me-auto text-{{ cat }}">{{ title }}</strong>
-                <small class="text-body-secondary">just now</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-              </div>
-              <div class="toast-body">
-                {{ message }}
-              </div>
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          {% set cat = category if category in ['success', 'info', 'warning', 'danger'] else ('danger' if category == 'error' else 'info') %}
+          {% if cat == 'success' %}
+            {% set icon = 'bi-check-circle-fill' %}
+            {% set title = 'Success' %}
+          {% elif cat == 'warning' %}
+            {% set icon = 'bi-exclamation-triangle-fill' %}
+            {% set title = 'Warning' %}
+          {% elif cat == 'danger' %}
+            {% set icon = 'bi-exclamation-octagon-fill' %}
+            {% set title = 'Error' %}
+          {% else %}
+            {% set icon = 'bi-info-circle-fill' %}
+            {% set title = 'Info' %}
+          {% endif %}
+          <div class="toast shadow" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="toast-header">
+              <i class="bi {{ icon }} text-{{ cat }} me-2"></i>
+              <strong class="me-auto text-{{ cat }}">{{ title }}</strong>
+              <small class="text-body-secondary">just now</small>
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+            <div class="toast-body">
+              {{ message }}
+            </div>
+          </div>
+        {% endfor %}
+      {% endwith %}
+    </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
+      function initExistingToasts() {
         const toastElList = document.querySelectorAll(".toast-container .toast");
         toastElList.forEach(function (toastEl) {
           const toast = new bootstrap.Toast(toastEl, {
@@ -231,7 +229,52 @@
           });
           toast.show();
         });
-      });
+      }
+
+      window.showToast = function (message, category = "info") {
+        const cat = ["success", "info", "warning", "danger"].includes(category)
+          ? category
+          : (category === "error" ? "danger" : "info");
+        const icons = {
+          success: "bi-check-circle-fill",
+          warning: "bi-exclamation-triangle-fill",
+          danger: "bi-exclamation-octagon-fill",
+          info: "bi-info-circle-fill"
+        };
+        const titles = {
+          success: "Success",
+          warning: "Warning",
+          danger: "Error",
+          info: "Info"
+        };
+
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+
+        const toastDiv = document.createElement("div");
+        toastDiv.className = "toast shadow";
+        toastDiv.setAttribute("role", "alert");
+        toastDiv.setAttribute("aria-live", "assertive");
+        toastDiv.setAttribute("aria-atomic", "true");
+        toastDiv.setAttribute("data-bs-delay", "5000");
+        toastDiv.innerHTML = `
+          <div class="toast-header">
+            <i class="bi ${icons[cat] || icons.info} text-${cat} me-2"></i>
+            <strong class="me-auto text-${cat}">${titles[cat] || "Notice"}</strong>
+            <small class="text-body-secondary">just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            ${message}
+          </div>
+        `;
+        container.appendChild(toastDiv);
+        const toast = new bootstrap.Toast(toastDiv, { delay: 5000, autohide: true });
+        toast.show();
+        toastDiv.addEventListener("hidden.bs.toast", () => toastDiv.remove());
+      };
+
+      document.addEventListener("DOMContentLoaded", initExistingToasts);
     </script>
   </body>
 </html>

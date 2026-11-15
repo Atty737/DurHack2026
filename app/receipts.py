@@ -10,7 +10,8 @@ import pytesseract
 from werkzeug.utils import secure_filename
 
 from app.db import get_db
-from app.gemini_image import gemini_read_image
+from app.gemini_image import gemini_read_image, format_gemini_error
+from google.genai import errors
 
 bp = Blueprint("receipts", __name__)
 
@@ -59,6 +60,10 @@ def upload_receipt():
                     )
                 except FileNotFoundError:
                     flash("The uploaded receipt could not be read as an image.", "warning")
+                except errors.APIError as error:
+                    flash(format_gemini_error(error), "danger")
+                except Exception as error:
+                    flash(format_gemini_error(error), "danger")
                 else:
                     receipt_id = uuid4().hex
                     items = [
@@ -66,8 +71,10 @@ def upload_receipt():
                             "user_id": session["user_id"],
                             "receipt_id": receipt_id,
                             "item_name": item["item"],
-                            "price": item["price"],
-                            "quantity": item["quantity"],
+                            "price": item.get("price"),
+                            "amount": item.get("amount", item.get("quantity", 1)),
+                            "unit": item.get("unit"),
+                            "quantity": item.get("amount", item.get("quantity", 1)),
                             "created_at": datetime.now(timezone.utc),
                         }
                         for item in result
