@@ -6,7 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from google import genai
 from google.genai import errors
 from app.db import get_db
-from app.gemini_image import standardize_unit_and_amount, format_gemini_error
+from app.gemini_image import standardize_unit_and_amount, format_gemini_error, clean_ingredient_name
 
 
 bp = Blueprint("recipes", __name__)
@@ -285,10 +285,45 @@ def save_recipe():
 
     result = get_db().recipes.insert_one(item)
 
+    # Automatically add ingredients not in pantry to shopping list
+    user_pantry_ids = {
+        str(doc["_id"])
+        for doc in get_db().receipt_items.find({"user_id": session["user_id"]}, {"_id": 1})
+    }
+
+    shopping_items = []
+    for ing in sanitized_ingredients:
+        # Check if ingredient is truly in pantry
+        in_pantry = bool(ing.get("in_pantry")) and (ing.get("pantry_item_id") in user_pantry_ids)
+        if not in_pantry:
+            raw_name = ing.get("name") or "Item"
+            cleaned_name = clean_ingredient_name(raw_name, ing.get("amount"), ing.get("unit"))
+            shopping_items.append({
+                "user_id": session["user_id"],
+                "item_name": cleaned_name or raw_name,
+                "raw_name": raw_name,
+                "amount": ing.get("amount"),
+                "unit": ing.get("unit") or "qty",
+                "recipe_id": result.inserted_id,
+                "recipe_name": recipe_name,
+                "checked": False,
+                "created_at": datetime.now(timezone.utc),
+            })
+
+    if shopping_items:
+        get_db().shopping_list.insert_many(shopping_items)
+
+    added_count = len(shopping_items)
+    if added_count > 0:
+        msg = f"Saved '{recipe_name}' to your recipes and added {added_count} missing item{'s' if added_count != 1 else ''} to your shopping list."
+    else:
+        msg = f"Saved '{recipe_name}' to your recipes."
+
     return jsonify(
         {
             "success": True,
             "recipe_id": str(result.inserted_id),
-            "message": f"Saved '{recipe_name}' to your recipes.",
+            "added_to_shopping_list": added_count,
+            "message": msg,
         }
     )

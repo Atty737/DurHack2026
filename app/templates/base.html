@@ -48,7 +48,7 @@
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 0.35rem 0.5rem;
+          padding: 0.35rem 0.3rem;
           line-height: 1;
         }
 
@@ -101,7 +101,7 @@
   <body>
     <!-- Mobile top header bar -->
     <header class="d-sm-none py-2 px-3 border-bottom bg-body-tertiary text-center">
-      <a class="h5 m-0 fw-bold text-decoration-none text-body" href="{{ url_for('main.index') }}"></a>
+      <a class="h5 m-0 fw-bold text-decoration-none text-body" href="{{ url_for('main.index') }}">Weekly Meal Planner</a>
     </header>
 
     <!-- Navigation bar (Fixed bottom on mobile, fixed top on desktop) -->
@@ -112,9 +112,8 @@
 
         <!-- Nav items: spaced evenly on mobile, aligned right on desktop -->
         <div class="navbar-nav w-100 justify-content-around justify-content-sm-end align-items-center gap-sm-2">
-          <!-- Home link -->
-          <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}" aria-label="Home" title="Home">
-            <i class="bi bi-house-door fs-4 d-sm-none"></i>
+          <!-- Home link (desktop only) -->
+          <a class="nav-link d-none d-sm-inline-block {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}" aria-label="Home" title="Home">
             <span class="d-none d-sm-inline">Home</span>
           </a>
 
@@ -129,6 +128,12 @@
             <a class="nav-link {% if request.endpoint == 'recipe_menu.recipe_menu' %}active{% endif %}" href="{{ url_for('recipe_menu.recipe_menu') }}" aria-label="My Recipes" title="My Recipes">
               <i class="bi bi-bookmark-check fs-4 d-sm-none"></i>
               <span class="d-none d-sm-inline">My Recipes</span>
+            </a>
+
+            <!-- Shopping List -->
+            <a class="nav-link {% if request.endpoint and request.endpoint.startswith('shopping_list') %}active{% endif %}" href="{{ url_for('shopping_list.shopping_list') }}" aria-label="Shopping List" title="Shopping List">
+              <i class="bi bi-cart3 fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">Shopping List</span>
             </a>
 
             <!-- Scan receipt -->

@@ -26,19 +26,13 @@
                 <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
               </span>
             </th>
-            <th scope="col" class="sortable-header" data-col="1" data-type="num" title="Click to sort by Price" style="cursor: pointer; user-select: none;">
-              <span class="d-inline-flex align-items-center gap-1">
-                Price
-                <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
-              </span>
-            </th>
-            <th scope="col" class="sortable-header text-center" data-col="2" data-type="num" title="Click to sort by Amount" style="cursor: pointer; user-select: none;">
+            <th scope="col" class="sortable-header text-center" data-col="1" data-type="num" title="Click to sort by Amount" style="cursor: pointer; user-select: none;">
               <span class="d-inline-flex align-items-center gap-1">
                 Amount
                 <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
               </span>
             </th>
-            <th scope="col" class="sortable-header" data-col="3" data-type="num" title="Click to sort by Date" style="cursor: pointer; user-select: none;">
+            <th scope="col" class="sortable-header" data-col="2" data-type="num" title="Click to sort by Date" style="cursor: pointer; user-select: none;">
               <span class="d-inline-flex align-items-center gap-1">
                 Date
                 <i class="bi bi-arrow-down-up text-muted small sort-icon"></i>
@@ -51,13 +45,6 @@
           {% for item in items %}
             <tr>
               <td data-sort="{{ item.item_name | lower }}">{{ item["item_name"] }}</td>
-              <td data-sort="{{ item.price if item.price is not none else -1 }}">
-                {% if item["price"] is not none %}
-                  £{{ "%.2f"|format(item["price"]) }}
-                {% else %}
-                  —
-                {% endif %}
-              </td>
               <td class="text-center" data-sort="{{ item.amount if item.get('amount') is not none else (item.quantity if item.get('quantity') is not none else -1) }}">
                 {% if item.get("amount") is not none %}
                   {{ item.amount }} {{ item.get("unit") or "qty" }}

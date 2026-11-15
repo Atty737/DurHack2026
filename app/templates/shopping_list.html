@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping List | Weekly Meal Planner{% endblock %}
+
+{% block content %}
+<div class="container py-3" style="max-width: 900px;">
+  <!-- Header & Actions -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+    <div>
+      <h2 class="h3 mb-1 d-flex align-items-center gap-2">
+        <i class="bi bi-cart3 text-primary"></i>
+        Shopping List
+      </h2>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle" id="to-buy-badge">
+          {{ unchecked_count }} to buy
+        </span>
+        {% if checked_count > 0 %}
+          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" id="completed-badge">
+            {{ checked_count }} completed
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button
+        class="btn btn-primary btn-sm"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#addItemCollapse"
+        aria-expanded="false"
+        aria-controls="addItemCollapse"
+      >
+        <i class="bi bi-plus-lg me-1"></i>Add Item
+      </button>
+
+      <form method="post" action="{{ url_for('shopping_list.sync_saved_recipes') }}" class="d-inline">
+        <button type="submit" class="btn btn-outline-primary btn-sm" title="Scan saved recipes and add any missing ingredients to this list">
+          <i class="bi bi-arrow-repeat me-1"></i>Sync from Recipes
+        </button>
+      </form>
+
+      {% if checked_count > 0 %}
+        <form method="post" action="{{ url_for('shopping_list.clear_checked') }}" class="d-inline">
+          <button type="submit" class="btn btn-outline-secondary btn-sm" title="Remove all completed items">
+            <i class="bi bi-check2-all me-1"></i>Clear Completed
+          </button>
+        </form>
+      {% endif %}
+
+      {% if total_count > 0 %}
+        <form
+          method="post"
+          action="{{ url_for('shopping_list.clear_all') }}"
+          class="d-inline"
+          onsubmit="return confirm('Are you sure you want to clear your entire shopping list?');"
+        >
+          <button type="submit" class="btn btn-outline-danger btn-sm" title="Clear entire shopping list">
+            <i class="bi bi-trash3 me-1"></i>Clear All
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Collapsible Add Item Form -->
+  <div class="collapse mb-4" id="addItemCollapse">
+    <div class="card card-body bg-light border">
+      <h6 class="card-title fw-bold mb-3">Add Custom Item</h6>
+      <form method="post" action="{{ url_for('shopping_list.add_item') }}" class="row g-2 align-items-end">
+        <div class="col-12 col-md-5">
+          <label for="item_name" class="form-label small fw-semibold text-secondary">Item Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="item_name"
+            name="item_name"
+            placeholder="e.g. Milk, Onions, Olive Oil"
+            required
+          >
+        </div>
+        <div class="col-6 col-md-3">
+          <label for="amount" class="form-label small fw-semibold text-secondary">Amount</label>
+          <input
+            type="number"
+            step="any"
+            min="0"
+            class="form-control"
+            id="amount"
+            name="amount"
+            placeholder="e.g. 500 or 2"
+          >
+        </div>
+        <div class="col-6 col-md-2">
+          <label for="unit" class="form-label small fw-semibold text-secondary">Unit</label>
+          <select class="form-select" id="unit" name="unit">
+            <option value="qty" selected>qty</option>
+            <option value="g">g</option>
+            <option value="ml">ml</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-plus-circle me-1"></i>Add
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shopping List Content -->
+  {% if items %}
+    <div class="list-group shadow-sm mb-4" id="shopping-list-group">
+      {% for item in items %}
+        <div
+          class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 gap-2 shopping-item-row {% if item.checked %}bg-light text-muted{% endif %}"
+          id="item-row-{{ item._id }}"
+          data-id="{{ item._id }}"
+        >
+          <!-- Left: Checkbox + Name + Badges -->
+          <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
+            <div class="form-check m-0">
+              <input
+                class="form-check-input item-checkbox"
+                type="checkbox"
+                value="1"
+                id="check-{{ item._id }}"
+                data-id="{{ item._id }}"
+                {% if item.checked %}checked{% endif %}
+                style="width: 1.35em; height: 1.35em; cursor: pointer;"
+                title="Mark as bought"
+              >
+            </div>
+
+            <div class="min-w-0 flex-grow-1">
+              <div class="d-flex align-items-baseline gap-2 flex-wrap">
+                <span
+                  class="fw-semibold item-title {% if item.checked %}text-decoration-line-through text-muted{% endif %}"
+                  id="title-{{ item._id }}"
+                  style="font-size: 1.05rem;"
+                >
+                  {{ item.item_name }}
+                </span>
+
+                {% if item.amount is not none %}
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                    {{ item.amount }} {{ item.unit or 'qty' }}
+                  </span>
+                {% elif item.unit and item.unit != 'qty' %}
+                  <span class="badge bg-light text-secondary border rounded-pill">
+                    {{ item.unit }}
+                  </span>
+                {% endif %}
+              </div>
+
+              <div class="small text-muted mt-1 d-flex align-items-center gap-2 flex-wrap">
+                {% if item.recipe_name %}
+                  <span class="badge bg-light text-secondary border">
+                    <i class="bi bi-book me-1"></i>Recipe: {{ item.recipe_name }}
+                  </span>
+                {% else %}
+                  <span class="badge bg-light text-secondary border">
+                    <i class="bi bi-pencil-square me-1"></i>Custom
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Actions -->
+          <div class="d-flex align-items-center gap-1 flex-shrink-0">
+            <!-- Add to Pantry Button -->
+            <form
+              method="post"
+              action="{{ url_for('shopping_list.move_to_pantry', item_id=item._id) }}"
+              class="d-inline move-to-pantry-form"
+              data-id="{{ item._id }}"
+              data-name="{{ item.item_name }}"
+            >
+              <button
+                type="submit"
+                class="btn btn-outline-success btn-sm"
+                title="Bought this! Move to Pantry"
+              >
+                <i class="bi bi-plus-circle me-1"></i>
+                <span class="d-none d-md-inline">To Pantry</span>
+              </button>
+            </form>
+
+            <!-- Delete Button -->
+            <form
+              method="post"
+              action="{{ url_for('shopping_list.delete_item', item_id=item._id) }}"
+              class="d-inline delete-item-form"
+              data-id="{{ item._id }}"
+            >
+              <button
+                type="submit"
+                class="btn btn-outline-danger btn-sm"
+                title="Remove item"
+              >
+                <i class="bi bi-trash3"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="card text-center py-5 shadow-sm border-0 bg-light">
+      <div class="card-body">
+        <i class="bi bi-cart-check text-muted" style="font-size: 3.5rem;"></i>
+        <h4 class="mt-3 fw-bold">Your shopping list is empty!</h4>
+        <p class="text-muted mx-auto" style="max-width: 500px;">
+          When you save recipes that require ingredients you don't already have in your pantry, they will automatically be added right here.
+        </p>
+
+        <div class="d-flex justify-content-center gap-2 flex-wrap mt-3">
+          {% if saved_recipe_count > 0 %}
+            <form method="post" action="{{ url_for('shopping_list.sync_saved_recipes') }}">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-arrow-repeat me-1"></i>Sync from {{ saved_recipe_count }} Saved Recipe{{ 's' if saved_recipe_count != 1 else '' }}
+              </button>
+            </form>
+          {% else %}
+            <a href="{{ url_for('recipes.recipes') }}" class="btn btn-primary">
+              <i class="bi bi-book me-1"></i>Generate Recipes
+            </a>
+          {% endif %}
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#addItemCollapse"
+          >
+            <i class="bi bi-plus-lg me-1"></i>Add Item Manually
+          </button>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Interactive Client-side JS -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 1. Interactive Checkbox Toggle
+    document.querySelectorAll(".item-checkbox").forEach(chk => {
+      chk.addEventListener("change", async function () {
+        const itemId = this.dataset.id;
+        const row = document.getElementById(`item-row-${itemId}`);
+        const title = document.getElementById(`title-${itemId}`);
+        const isChecked = this.checked;
+
+        // Optimistic UI update
+        if (isChecked) {
+          title?.classList.add("text-decoration-line-through", "text-muted");
+          row?.classList.add("bg-light", "text-muted");
+        } else {
+          title?.classList.remove("text-decoration-line-through", "text-muted");
+          row?.classList.remove("bg-light", "text-muted");
+        }
+
+        try {
+          const res = await fetch(`/shopping-list/${itemId}/toggle`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            // Revert on failure
+            this.checked = !isChecked;
+            if (this.checked) {
+              title?.classList.add("text-decoration-line-through", "text-muted");
+              row?.classList.add("bg-light", "text-muted");
+            } else {
+              title?.classList.remove("text-decoration-line-through", "text-muted");
+              row?.classList.remove("bg-light", "text-muted");
+            }
+          }
+        } catch (err) {
+          console.error("Error toggling item:", err);
+        }
+      });
+    });
+
+    // 2. Interactive Move to Pantry
+    document.querySelectorAll(".move-to-pantry-form").forEach(form => {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const itemId = this.dataset.id;
+        const itemName = this.dataset.name || "Item";
+        const row = document.getElementById(`item-row-${itemId}`);
+
+        const btn = this.querySelector("button");
+        if (btn) btn.disabled = true;
+
+        try {
+          const res = await fetch(`/shopping-list/${itemId}/move-to-pantry`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if (window.showToast) {
+              window.showToast(data.message || `Added '${itemName}' to pantry!`, "success");
+            }
+            // Animate and remove row
+            row?.classList.add("fade");
+            setTimeout(() => {
+              row?.remove();
+              checkEmptyList();
+            }, 250);
+          } else {
+            if (btn) btn.disabled = false;
+            if (window.showToast) {
+              window.showToast(data.error || "Failed to move item to pantry.", "danger");
+            }
+          }
+        } catch (err) {
+          console.error("Error moving to pantry:", err);
+          if (btn) btn.disabled = false;
+        }
+      });
+    });
+
+    // 3. Interactive Delete
+    document.querySelectorAll(".delete-item-form").forEach(form => {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const itemId = this.dataset.id;
+        const row = document.getElementById(`item-row-${itemId}`);
+
+        const btn = this.querySelector("button");
+        if (btn) btn.disabled = true;
+
+        try {
+          const res = await fetch(`/shopping-list/${itemId}/delete`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            row?.classList.add("fade");
+            setTimeout(() => {
+              row?.remove();
+              checkEmptyList();
+            }, 250);
+          } else {
+            if (btn) btn.disabled = false;
+          }
+        } catch (err) {
+          console.error("Error deleting item:", err);
+          if (btn) btn.disabled = false;
+        }
+      });
+    });
+
+    function checkEmptyList() {
+      const remaining = document.querySelectorAll(".shopping-item-row");
+      if (remaining.length === 0) {
+        window.location.reload();
+      }
+    }
+  });
+</script>
+{% endblock %}
