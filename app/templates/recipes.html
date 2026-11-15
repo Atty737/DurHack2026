@@ -20,6 +20,12 @@
 
 <script>
     document.getElementById("genButton").addEventListener("click", GenerateRecipes);
+    document.getElementById("budget").addEventListener("keyup", KeyPress);
+    function KeyPress(event) {
+        if (event.key == "Enter"){
+            GenerateRecipes(event);
+        }
+    }
     async function GenerateRecipes(event) {
         document.getElementById("genSpinner").style.display = ""
 
@@ -27,6 +33,7 @@
 
         const response = await fetch(`/api/recipeGenerate?${params}`);
         const data = await response.json();
+        console.log(data)
         let recipes = ""
         for (let i = 1; i < 8; i++){
             recipes = recipes + "<h2>" + data.recipeNames[i - 1] + "</h2><ul>";
@@ -35,10 +42,10 @@
             } 
             recipes = recipes +  `</ul>
             <p class="d-inline-flex gap-1">
-                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${i}">Recipe</button>
             </p>
             <div id="collapse-${i}" class="collapse">
-                <div class="card card-body">${data.links[i - 1] }</div>
+            <div class="card card-body">${data.instructions[i - 1]}</div>
             </div>`;         
         }
 

@@ -17,11 +17,11 @@ def signup():
         confirm_password = request.form.get("confirm_password", "")
 
         if not username or not email or not password:
-            flash("Username, email, and password are required.")
+            flash("Username, email, and password are required.", "warning")
         elif len(password) < 8:
-            flash("Password must be at least 8 characters.")
+            flash("Password must be at least 8 characters.", "warning")
         elif password != confirm_password:
-            flash("Passwords do not match.")
+            flash("Passwords do not match.", "warning")
         else:
             try:
                 user = {
@@ -31,11 +31,12 @@ def signup():
                 }
                 result = get_db().users.insert_one(user)
             except DuplicateKeyError:
-                flash("That username or email is already registered.")
+                flash("That username or email is already registered.", "warning")
             else:
                 session.clear()
                 session["user_id"] = str(result.inserted_id)
                 session["username"] = username
+                flash("Account created successfully!", "success")
                 return redirect(url_for("main.index"))
 
     return render_template("auth/signup.html")
@@ -49,11 +50,12 @@ def login():
         user = get_db().users.find_one({"username": username})
 
         if user is None or not check_password_hash(user["password_hash"], password):
-            flash("Invalid username or password.")
+            flash("Invalid username or password.", "warning")
         else:
             session.clear()
             session["user_id"] = str(user["_id"])
             session["username"] = user["username"]
+            flash("Logged in successfully.", "success")
             return redirect(url_for("main.index"))
 
     return render_template("auth/login.html")
@@ -62,4 +64,5 @@ def login():
 @bp.post("/logout")
 def logout():
     session.clear()
+    flash("Logged out successfully.", "info")
     return redirect(url_for("main.index"))

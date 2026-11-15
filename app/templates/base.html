@@ -84,6 +84,17 @@
           padding: 0.5rem 0.75rem;
         }
       }
+
+      /* Toast Notifications */
+      .toast-container {
+        z-index: 1090;
+      }
+
+      @media (max-width: 575.98px) {
+        .toast-container {
+          bottom: 4.75rem !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -156,21 +167,57 @@
 
     <!-- Main Content Container -->
     <main class="container py-3, px-0">
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <div class="mb-3">
-            {% for message in messages %}
-              <div class="alert alert-info alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
       <div class="container">
         {% block content %}{% endblock %}
       </div>
     </main>
+
+    <!-- Toast Notifications Container (Bottom Right) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+          {% for category, message in messages %}
+            {% set cat = category if category in ['success', 'info', 'warning', 'danger'] else ('danger' if category == 'error' else 'info') %}
+            {% if cat == 'success' %}
+              {% set icon = 'bi-check-circle-fill' %}
+              {% set title = 'Success' %}
+            {% elif cat == 'warning' %}
+              {% set icon = 'bi-exclamation-triangle-fill' %}
+              {% set title = 'Warning' %}
+            {% elif cat == 'danger' %}
+              {% set icon = 'bi-exclamation-octagon-fill' %}
+              {% set title = 'Error' %}
+            {% else %}
+              {% set icon = 'bi-info-circle-fill' %}
+              {% set title = 'Info' %}
+            {% endif %}
+            <div class="toast shadow" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+              <div class="toast-header">
+                <i class="bi {{ icon }} text-{{ cat }} me-2"></i>
+                <strong class="me-auto text-{{ cat }}">{{ title }}</strong>
+                <small class="text-body-secondary">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body">
+                {{ message }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const toastElList = document.querySelectorAll(".toast-container .toast");
+        toastElList.forEach(function (toastEl) {
+          const toast = new bootstrap.Toast(toastEl, {
+            delay: 5000,
+            autohide: true
+          });
+          toast.show();
+        });
+      });
+    </script>
   </body>
 </html>
