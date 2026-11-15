@@ -125,6 +125,12 @@
               <span class="d-none d-sm-inline">Recipes</span>
             </a>
 
+            <!-- Recipe menu -->
+            <a class="nav-link {% if request.endpoint == 'recipe_menu.recipe_menu' %}active{% endif %}" href="{{ url_for('recipe_menu.recipe_menu') }}" aria-label="My Recipes" title="My Recipes">
+              <i class="bi bi-bookmark-check fs-4 d-sm-none"></i>
+              <span class="d-none d-sm-inline">My Recipes</span>
+            </a>
+
             <!-- Scan receipt -->
             <a class="nav-link {% if request.endpoint == 'receipts.upload_receipt' %}active{% endif %}" href="{{ url_for('receipts.upload_receipt') }}" aria-label="Scan receipt" title="Scan receipt">
               <i class="bi bi-camera fs-4 d-sm-none"></i>
@@ -136,16 +142,11 @@
               <i class="bi bi-basket fs-4 d-sm-none"></i>
               <span class="d-none d-sm-inline">Pantry</span>
             </a>
-            
-            <!-- Recipe menu -->
-            <a class="nav-link {% if request.endpoint == 'recipe_menu.recipe_menu' %}active{% endif %}" href="{{ url_for('recipe_menu.recipe_menu') }}" aria-label="My Recipes" title="My Recipes">
-              <i class="bi bi-basket fs-4 d-sm-none"></i>
-              <span class="d-none d-sm-inline">My Recipes</span>
-            </a>
+          
 
             <!-- Closest Shop -->
             <a class="nav-link {% if request.endpoint == 'nearest_shop.nearest_shop' %}active{% endif %}" href="{{ url_for('nearest_shop.nearest_shop') }}" aria-label="Nearest Shop" title="Nearest Shop">
-              <i class="bi bi-basket fs-4 d-sm-none"></i>
+              <i class="bi bi-geo-alt fs-4 d-sm-none"></i>
               <span class="d-none d-sm-inline">Nearest Shop</span>
             </a>
 
