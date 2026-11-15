@@ -5,3 +5,4 @@ __pycache__/
 .pytest_cache/
 test.py
 sample_receipt.png
+rb_receipt.jpeg
