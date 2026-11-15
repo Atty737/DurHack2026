@@ -67,24 +67,52 @@ def GenerateRecipes():
 
     recipes = json.loads(response.text)
 
+    # Return generated recipes to the client without saving them yet
     items = []
     for recipe in recipes:
         items.append(
             {
-                "user_id": session["user_id"],
-                "recipe_name": recipe["recipe_name"], 
-                "ingredients": recipe["ingredients"], 
-                "recipe": recipe["instructions"], 
-                "created_at": datetime.now(timezone.utc)
+                "recipe_name": recipe["recipe_name"],
+                "ingredients": recipe["ingredients"],
+                "recipe": recipe["instructions"],
             }
         )
-    
-    if items:
-        get_db().recipes.insert_many(items)
-        for item in items:
-            item["_id"] = str(item["_id"])
 
     return jsonify(items)
+
+
+@bp.post("/api/saveRecipe")
+@bp.post("/api/recipes/save")
+def save_recipe():
+    if not session.get("user_id"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    recipe_name = data.get("recipe_name")
+    ingredients = data.get("ingredients")
+    recipe_instructions = data.get("instructions") or data.get("recipe")
+
+    if not recipe_name:
+        return jsonify({"error": "Missing recipe name"}), 400
+
+    item = {
+        "user_id": session["user_id"],
+        "recipe_name": recipe_name,
+        "ingredients": ingredients or [],
+        "recipe": recipe_instructions or [],
+        "created_at": datetime.now(timezone.utc),
+    }
+
+    result = get_db().recipes.insert_one(item)
+
+    return jsonify(
+        {
+            "success": True,
+            "recipe_id": str(result.inserted_id),
+            "message": f"Saved '{recipe_name}' to your recipes.",
+        }
+    )
+
 
 def tryCall(response):
     try:
